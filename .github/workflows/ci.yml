@@ -48,7 +48,7 @@ jobs:
             apt-get update
             DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
               build-essential ca-certificates wget
-            ver="$(dpkg-query -W -f "${Version}" postgresql-17)"
+            ver="$(dpkg-query -W postgresql-17 | awk '{print $2}')"
             cd /tmp
             apt-get download "postgresql-server-dev-17=${ver}"
             dpkg-deb -x postgresql-server-dev-17_*.deb /
