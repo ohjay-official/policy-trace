@@ -11,3 +11,7 @@
   - Realtime sync of two windows is deferred.
   - Fonts follow the dashboard stack (Manrope, Inter, Source Code Pro). The brand page does not name them. Logo SVGs are the official files, unmodified, and only sit next to the "Built on" line.
   - SQL tests ran on local PostgreSQL 16, including a second apply of the migrations. CI runs the same script against PostgreSQL 17. The hosted project was not migrated from here: there is no database password, and the coordinator applies the files in order.
+- 2026-11-12: Hosted apply of the evaluator failed with `permission denied for schema lab_internal`.
+  - Reproduced as a non-superuser member of anon, authenticated, and service_role. `CREATE FUNCTION` in `lab_internal` succeeds. `ALTER FUNCTION ... OWNER TO anon` then fails, because a non-superuser can hand a function to a role only when that role has `CREATE` on the schema. Superuser skips the check, which is why the first CI run passed.
+  - The evaluator migration now grants `USAGE` and `CREATE` for that ownership change only, copies the query function into each role-owned function, and revokes the schema privileges again. anon, authenticated, and service_role finish with no privileges on `lab_internal`.
+  - `npm run test:sql` applies the migrations as that non-superuser, twice.

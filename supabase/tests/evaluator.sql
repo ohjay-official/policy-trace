@@ -290,6 +290,17 @@ begin
   result := public.get_lab_share('00000000-0000-4000-8000-000000000099');
   perform pg_temp.expect('missing share', result ->> 'error' = 'not_found', result);
 
+  perform pg_temp.expect(
+    'api roles have no lab_internal schema access',
+    not has_schema_privilege('anon', 'lab_internal', 'USAGE')
+      and not has_schema_privilege('anon', 'lab_internal', 'CREATE')
+      and not has_schema_privilege('authenticated', 'lab_internal', 'USAGE')
+      and not has_schema_privilege('authenticated', 'lab_internal', 'CREATE')
+      and not has_schema_privilege('service_role', 'lab_internal', 'USAGE')
+      and not has_schema_privilege('service_role', 'lab_internal', 'CREATE'),
+    null
+  );
+
   set local role anon;
   perform pg_temp.expect(
     'anon can read scenarios once seeded',

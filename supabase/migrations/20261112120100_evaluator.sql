@@ -1508,42 +1508,87 @@ begin
 end;
 $fn$;
 
-create or replace function lab_internal.exec_as_anon(payload jsonb)
-returns jsonb
-language plpgsql
-security definer
-set search_path = pg_catalog
-as $fn$
+-- Hosted Supabase runs migrations as postgres, which is not a superuser.
+-- Giving a function to anon/authenticated/service_role requires that role to
+-- have CREATE on the schema at that moment. A superuser skips the check.
+-- The privilege is granted only for the ownership change, then revoked.
+-- Each wrapper is a copy of perform_query, so those roles do not need USAGE
+-- on lab_internal afterwards. They cannot call the parser or perform_query.
+do $clone$
+declare
+  def text;
+  body text;
+  target text;
+  owner_name text;
+  migrator text := current_user;
 begin
-  return lab_internal.perform_query(payload);
-end;
-$fn$;
+  def := pg_get_functiondef('lab_internal.perform_query(jsonb)'::regprocedure);
+  body := substring(def from '\$function\$(.*)\$function\$');
+  if body is null or char_length(body) < 20 then
+    raise exception 'could not clone lab_internal.perform_query';
+  end if;
 
-create or replace function lab_internal.exec_as_authenticated(payload jsonb)
-returns jsonb
-language plpgsql
-security definer
-set search_path = pg_catalog
-as $fn$
-begin
-  return lab_internal.perform_query(payload);
-end;
-$fn$;
+  foreach target in array array['anon', 'authenticated', 'service_role']
+  loop
+    select r.rolname into owner_name
+    from pg_catalog.pg_proc p
+    join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+    join pg_catalog.pg_roles r on r.oid = p.proowner
+    where n.nspname = 'lab_internal'
+      and p.proname = 'exec_as_' || target
+      and pg_catalog.pg_get_function_identity_arguments(p.oid) = 'payload jsonb';
 
-create or replace function lab_internal.exec_as_service_role(payload jsonb)
-returns jsonb
-language plpgsql
-security definer
-set search_path = pg_catalog
-as $fn$
-begin
-  return lab_internal.perform_query(payload);
-end;
-$fn$;
+    if owner_name is not null and owner_name <> migrator then
+      begin
+        -- The owning role has no schema privilege after the previous run.
+        -- Grant usage only so it can drop its own function, then take it back.
+        execute format('grant usage on schema lab_internal to %I', owner_name);
+        execute format('set role %I', owner_name);
+        execute format('drop function lab_internal.exec_as_%s(jsonb)', target);
+        execute format('set role %I', migrator);
+        execute format('revoke all on schema lab_internal from %I', owner_name);
+      exception
+        when others then
+          execute format('set role %I', migrator);
+          raise;
+      end;
+    elsif owner_name is not null then
+      execute format('drop function lab_internal.exec_as_%s(jsonb)', target);
+    end if;
 
-alter function lab_internal.exec_as_anon(jsonb) owner to anon;
-alter function lab_internal.exec_as_authenticated(jsonb) owner to authenticated;
-alter function lab_internal.exec_as_service_role(jsonb) owner to service_role;
+    execute
+      'create function lab_internal.exec_as_' || target || '(payload jsonb)
+         returns jsonb
+         language plpgsql
+         security definer
+         set search_path = pg_catalog
+         as $clonebody$' || body || '$clonebody$';
+
+    execute format('grant usage, create on schema lab_internal to %I', target);
+    execute format(
+      'alter function lab_internal.exec_as_%s(jsonb) owner to %I',
+      target,
+      target
+    );
+    -- Granting to the current owner does not survive the ownership change.
+    -- The new owner has to grant the migration role explicitly.
+    begin
+      execute format('set role %I', target);
+      execute format(
+        'grant execute on function lab_internal.exec_as_%s(jsonb) to %I',
+        target,
+        migrator
+      );
+      execute format('set role %I', migrator);
+    exception
+      when others then
+        execute format('set role %I', migrator);
+        raise;
+    end;
+    execute format('revoke all on schema lab_internal from %I', target);
+  end loop;
+end;
+$clone$;
 
 create or replace function lab_internal.evaluate_lab(
   p_slug text,
@@ -1939,8 +1984,7 @@ end;
 $fn$;
 
 revoke all on all functions in schema lab_internal from public, anon, authenticated, service_role;
-grant usage on schema lab_internal to anon, authenticated, service_role;
-grant execute on function lab_internal.perform_query(jsonb) to anon, authenticated, service_role;
+revoke all on schema lab_internal from public, anon, authenticated, service_role;
 revoke all on function public.run_lab(text, text, text) from public;
 revoke all on function public.create_lab_share(text, text) from public;
 revoke all on function public.get_lab_share(uuid) from public;
