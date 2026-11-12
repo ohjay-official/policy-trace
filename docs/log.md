@@ -1,2 +1,21 @@
 # Log
 - 2026-11-12: Research pack done (docs/research). Brief and spec written. Oh-Jay said to go end to end.
+- 2026-11-12: v1 implementation.
+  - Evaluator is a `SECURITY DEFINER` RPC, not an Edge Function. One transaction, no extra secret, and the publishable key is enough to call it.
+  - Postgres refuses `SET ROLE` inside a security definer function (`cannot set parameter "role"`). The scenario query and the per-row `USING` / `WITH CHECK` checks run in a second security definer function owned by `anon`, `authenticated`, or `service_role`. That is the role switch. Confirmed on local Postgres: `42501` versus an empty `SELECT`, silent `UPDATE 0` without a `SELECT` policy, `USING (true)` OR-leak, team notes, and `service_role` bypass.
+  - User SQL is parsed and re-emitted. The original string is never executed. The browser has the same whitelist so the editor can reject a statement before the round trip. The database parser is the one that matters.
+  - Sandbox DDL is rolled back by raising `P0001` inside a subtransaction. Local variables keep the JSON result.
+  - `lab_shares` is not granted to `anon`. A share is read by token through `get_lab_share`. Listing the table is denied.
+  - The UI ships the scenario catalog so `next build` works with no project. The seed migration upserts the same copy. If the env vars are missing, the pages render and Run explains that nothing was executed.
+  - `service_role` is granted inside the sandbox setup so the bypass is visible. The warning stays on screen. The client never receives a secret key.
+  - Realtime sync of two windows is deferred.
+  - Fonts follow the dashboard stack (Manrope, Inter, Source Code Pro). The brand page does not name them. Logo SVGs are the official files, unmodified, and only sit next to the "Built on" line.
+  - SQL tests ran on local PostgreSQL 16, including a second apply of the migrations. CI runs the same script against PostgreSQL 17. The hosted project was not migrated from here: there is no database password, and the coordinator applies the files in order.
+- 2026-11-12: Hosted apply of the evaluator failed with `permission denied for schema lab_internal`.
+  - Reproduced as a non-superuser member of anon, authenticated, and service_role. `CREATE FUNCTION` in `lab_internal` succeeds. `ALTER FUNCTION ... OWNER TO anon` then fails, because a non-superuser can hand a function to a role only when that role has `CREATE` on the schema. Superuser skips the check, which is why the first CI run passed.
+  - The evaluator migration now grants `USAGE` and `CREATE` for that ownership change only, copies the query function into each role-owned function, and revokes the schema privileges again. anon, authenticated, and service_role finish with no privileges on `lab_internal`.
+  - `npm run test:sql` applies the migrations as that non-superuser, twice.
+- 2026-11-12: Silent update failed through PostgREST with sqlstate 21000, "UPDATE requires a WHERE clause".
+  - Confirmed with pg-safeupdate loaded: direct SQL as a superuser succeeds, and the same `run_lab` call returns 21000 once the library is loaded. The statement is `update lab_sandbox.__after_<table> set status = 'closed'` in `evaluate_lab`, used to project the new row for WITH CHECK. The scenario UPDATE already has a WHERE. No evaluator DELETE lacks one.
+  - `WHERE true` keeps every copied row and satisfies safeupdate (`quals` is not null).
+  - Shipped as `20261112120300_safeupdate_where.sql` because `20261112120100_evaluator.sql` is already applied on the hosted project. CI builds pg-safeupdate into the Postgres 17 service and the SQL test loads it.

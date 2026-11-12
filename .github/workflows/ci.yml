@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - name: Install pg-safeupdate in Postgres
+        run: |
+          set -euo pipefail
+          cid="$(docker ps -q --filter ancestor=postgres:17 | head -n 1)"
+          if [ -z "$cid" ]; then
+            cid="$(docker ps -q --filter publish=5432 | head -n 1)"
+          fi
+          test -n "$cid"
+          # Extract the matching server-dev package instead of apt-get install.
+          # Installing it upgrades the running server and breaks plpgsql.so.
+          docker exec -u root "$cid" bash -lc '
+            set -euo pipefail
+            apt-get update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential ca-certificates wget
+            ver="$(dpkg-query -W postgresql-17 | cut -f2)"
+            cd /tmp
+            apt-get download "postgresql-server-dev-17=${ver}"
+            dpkg-deb -x postgresql-server-dev-17_*.deb /
+            wget -q -O /tmp/safeupdate.tar.gz \
+              https://github.com/eradman/pg-safeupdate/archive/refs/heads/master.tar.gz
+            tar -C /tmp -xzf /tmp/safeupdate.tar.gz
+            make -C /tmp/pg-safeupdate-master with_llvm=no
+            make -C /tmp/pg-safeupdate-master with_llvm=no install
+          '
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "LOAD 'safeupdate';"
+      - run: npm run test:sql
+      - run: npm run build
