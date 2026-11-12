@@ -58,7 +58,7 @@ export function ShareView({ id }: { id: string }) {
     return (
       <main className="pt-10">
         <p className="text-sm text-muted">Shared snapshot</p>
-        <h1 className="mt-3 text-3xl font-semibold">Share</h1>
+        <h1 className="mt-4 text-3xl font-medium">Share</h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
           {message ?? "Loading the snapshot."}
         </p>

@@ -8,7 +8,7 @@ export default function HomePage() {
     <main className="pt-8">
       <header className="border-b border-line pb-8">
         <p className="text-sm text-muted">Independent community project</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">Policy Trace</h1>
+        <h1 className="mt-4 text-4xl font-medium">Policy Trace</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed">
           See whether a row was stopped by a grant or filtered by a policy.
         </p>
@@ -23,7 +23,7 @@ export default function HomePage() {
       </header>
 
       <section className="mt-8" aria-labelledby="scenarios-heading">
-        <h2 id="scenarios-heading" className="text-xl font-semibold">
+        <h2 id="scenarios-heading" className="text-xl font-medium">
           Scenarios
         </h2>
         <ol className="mt-4 divide-y divide-line border-y border-line">
@@ -32,7 +32,7 @@ export default function HomePage() {
               <div className="flex items-baseline gap-4">
                 <span className="w-8 font-mono text-sm text-muted">0{index + 1}</span>
                 <div className="min-w-0">
-                  <h3 className="text-lg font-semibold">
+                  <h3 className="text-lg font-medium">
                     <Link href={`/lab/${scenario.slug}`} className="underline decoration-line underline-offset-4">
                       {scenario.title}
                     </Link>
