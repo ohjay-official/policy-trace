@@ -41,16 +41,23 @@ jobs:
             cid="$(docker ps -q --filter publish=5432 | head -n 1)"
           fi
           test -n "$cid"
+          # Extract the matching server-dev package instead of apt-get install.
+          # Installing it upgrades the running server and breaks plpgsql.so.
           docker exec -u root "$cid" bash -lc '
             set -euo pipefail
             apt-get update
             DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-              build-essential ca-certificates postgresql-server-dev-17 wget
+              build-essential ca-certificates wget
+            ver="$(dpkg-query -W -f "${Version}" postgresql-17)"
+            cd /tmp
+            apt-get download "postgresql-server-dev-17=${ver}"
+            dpkg-deb -x postgresql-server-dev-17_*.deb /
             wget -q -O /tmp/safeupdate.tar.gz \
               https://github.com/eradman/pg-safeupdate/archive/refs/heads/master.tar.gz
             tar -C /tmp -xzf /tmp/safeupdate.tar.gz
             make -C /tmp/pg-safeupdate-master
             make -C /tmp/pg-safeupdate-master install
           '
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "LOAD 'safeupdate';"
       - run: npm run test:sql
       - run: npm run build
