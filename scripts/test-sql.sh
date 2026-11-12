@@ -59,6 +59,7 @@ apply() {
   apply_as_hosted supabase/migrations/20261112120000_schemas_tables.sql
   apply_as_hosted supabase/migrations/20261112120100_evaluator.sql
   apply_as_hosted supabase/migrations/20261112120200_seed_scenarios.sql
+  apply_as_hosted supabase/migrations/20261112120300_safeupdate_where.sql
 }
 
 apply

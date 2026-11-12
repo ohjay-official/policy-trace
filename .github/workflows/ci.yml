@@ -33,5 +33,24 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+      - name: Install pg-safeupdate in Postgres
+        run: |
+          set -euo pipefail
+          cid="$(docker ps -q --filter ancestor=postgres:17 | head -n 1)"
+          if [ -z "$cid" ]; then
+            cid="$(docker ps -q --filter publish=5432 | head -n 1)"
+          fi
+          test -n "$cid"
+          docker exec -u root "$cid" bash -lc '
+            set -euo pipefail
+            apt-get update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential ca-certificates postgresql-server-dev-17 wget
+            wget -q -O /tmp/safeupdate.tar.gz \
+              https://github.com/eradman/pg-safeupdate/archive/refs/heads/master.tar.gz
+            tar -C /tmp -xzf /tmp/safeupdate.tar.gz
+            make -C /tmp/pg-safeupdate-master
+            make -C /tmp/pg-safeupdate-master install
+          '
       - run: npm run test:sql
       - run: npm run build

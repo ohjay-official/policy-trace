@@ -1,4 +1,16 @@
 -- Behavioral tests for public.run_lab. Loaded by scripts/test-sql.sh.
+-- PostgREST preloads pg-safeupdate. When that library is installed, load it
+-- for this session so an UPDATE or DELETE without WHERE fails here too.
+
+do $load$
+begin
+  execute 'LOAD ''safeupdate''';
+  raise notice 'safeupdate loaded';
+exception
+  when undefined_file then
+    raise notice 'safeupdate library is not installed; the source audit still runs';
+end;
+$load$;
 
 create or replace function pg_temp.expect(label text, cond boolean, detail jsonb default null)
 returns void
@@ -289,6 +301,27 @@ begin
 
   result := public.get_lab_share('00000000-0000-4000-8000-000000000099');
   perform pg_temp.expect('missing share', result ->> 'error' = 'not_found', result);
+
+  perform pg_temp.expect(
+    'evaluator DML has a WHERE clause',
+    not exists (
+      select 1
+      from pg_catalog.pg_proc p
+      join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+      where n.nspname in ('public', 'lab_internal')
+        and p.prosrc ~* '\mupdate\s+\S+\s+set\s+[^;]*;'
+        and p.prosrc !~* '\mupdate\s+\S+\s+set\s+[^;]*\mwhere\M'
+    )
+    and not exists (
+      select 1
+      from pg_catalog.pg_proc p
+      join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+      where n.nspname in ('public', 'lab_internal')
+        and p.prosrc ~* '\mdelete\s+from\s+[^;]*;'
+        and p.prosrc !~* '\mdelete\s+from\s+[^;]*\mwhere\M'
+    ),
+    null
+  );
 
   perform pg_temp.expect(
     'api roles have no lab_internal schema access',

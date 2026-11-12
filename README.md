@@ -66,10 +66,13 @@ The project is empty until these files have been applied, in this order, on a fr
 1. `supabase/migrations/20261112120000_schemas_tables.sql`
 2. `supabase/migrations/20261112120100_evaluator.sql`
 3. `supabase/migrations/20261112120200_seed_scenarios.sql`
+4. `supabase/migrations/20261112120300_safeupdate_where.sql`
 
 They are written so pasting them again does not fail: tables use `if not exists`, policies are dropped before they are created, functions are replaced, and the seed upserts.
 
-`20261112120000_schemas_tables.sql` is already applied on the hosted project. Leave that file as it is and apply the two files after it. The evaluator migration temporarily grants `CREATE` on `lab_internal` so a non-superuser can give the role-specific functions to `anon`, `authenticated`, and `service_role`, then revokes that grant. Those roles have no privileges on `lab_internal` when the migration finishes.
+The evaluator migration temporarily grants `CREATE` on `lab_internal` so a non-superuser can give the role-specific functions to `anon`, `authenticated`, and `service_role`, then revokes that grant. Those roles have no privileges on `lab_internal` when the migration finishes.
+
+`20261112120300_safeupdate_where.sql` adds `WHERE true` to the trace-table UPDATE. PostgREST loads pg-safeupdate, which rejects an UPDATE or DELETE that has no WHERE clause. A project that already applied the first three files only needs this fourth file.
 
 Do not run `supabase/tests/prelude.sql` on a Supabase project. It replaces `auth.uid()` for vanilla Postgres. Supabase already provides `auth.uid()` and `auth.jwt()`.
 
