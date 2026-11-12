@@ -1,2 +1,13 @@
 # Log
 - 2026-11-12: Research pack done (docs/research). Brief and spec written. Oh-Jay said to go end to end.
+- 2026-11-12: v1 implementation.
+  - Evaluator is a `SECURITY DEFINER` RPC, not an Edge Function. One transaction, no extra secret, and the publishable key is enough to call it.
+  - Postgres refuses `SET ROLE` inside a security definer function (`cannot set parameter "role"`). The scenario query and the per-row `USING` / `WITH CHECK` checks run in a second security definer function owned by `anon`, `authenticated`, or `service_role`. That is the role switch. Confirmed on local Postgres: `42501` versus an empty `SELECT`, silent `UPDATE 0` without a `SELECT` policy, `USING (true)` OR-leak, team notes, and `service_role` bypass.
+  - User SQL is parsed and re-emitted. The original string is never executed. The browser has the same whitelist so the editor can reject a statement before the round trip. The database parser is the one that matters.
+  - Sandbox DDL is rolled back by raising `P0001` inside a subtransaction. Local variables keep the JSON result.
+  - `lab_shares` is not granted to `anon`. A share is read by token through `get_lab_share`. Listing the table is denied.
+  - The UI ships the scenario catalog so `next build` works with no project. The seed migration upserts the same copy. If the env vars are missing, the pages render and Run explains that nothing was executed.
+  - `service_role` is granted inside the sandbox setup so the bypass is visible. The warning stays on screen. The client never receives a secret key.
+  - Realtime sync of two windows is deferred.
+  - Fonts follow the dashboard stack (Manrope, Inter, Source Code Pro). The brand page does not name them. Logo SVGs are the official files, unmodified, and only sit next to the "Built on" line.
+  - SQL tests ran on local PostgreSQL 16, including a second apply of the migrations. CI runs the same script against PostgreSQL 17. The hosted project was not migrated from here: there is no database password, and the coordinator applies the files in order.
