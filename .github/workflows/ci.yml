@@ -55,8 +55,8 @@ jobs:
             wget -q -O /tmp/safeupdate.tar.gz \
               https://github.com/eradman/pg-safeupdate/archive/refs/heads/master.tar.gz
             tar -C /tmp -xzf /tmp/safeupdate.tar.gz
-            make -C /tmp/pg-safeupdate-master
-            make -C /tmp/pg-safeupdate-master install
+            make -C /tmp/pg-safeupdate-master with_llvm=no
+            make -C /tmp/pg-safeupdate-master with_llvm=no install
           '
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "LOAD 'safeupdate';"
       - run: npm run test:sql
