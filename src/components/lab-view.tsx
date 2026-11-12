@@ -215,28 +215,18 @@ export function LabView({
   const sub = IDENTITY_SUB[identity];
 
   return (
-    <div className="pt-6 pb-24 lg:pb-0">
-      <header className="border-b border-line pb-4">
-        <p className="text-sm text-muted">Independent community project</p>
-        <p className="mt-2 text-sm">
-          <Link href="/" className="underline decoration-line underline-offset-4">
-            Policy Trace
-          </Link>
-        </p>
-      </header>
+    <div className="lab" style={{ paddingBottom: 96 }}>
+      <div className="page-head" style={{ paddingBottom: 0 }}>
+        <h1>{scenario.title}</h1>
+        <p>{scenario.summary}</p>
+      </div>
 
-      <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8" style={{ marginTop: 28 }}>
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">{scenario.title}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">{scenario.summary}</p>
 
           <fieldset className="mt-6">
             <legend className="text-sm">Who is running the query</legend>
-            <div
-              role="radiogroup"
-              aria-label="Who is running the query"
-              className="mt-2 flex flex-wrap border border-line"
-            >
+            <div role="radiogroup" aria-label="Who is running the query" className="choice" style={{ marginTop: 8 }}>
               {IDENTITIES.map((id) => {
                 const selected = id === identity;
                 return (
@@ -245,8 +235,7 @@ export function LabView({
                     type="button"
                     role="radio"
                     aria-checked={selected}
-                    className={`px-3 py-2 text-sm ${selected ? "text-brand" : "text-ink"}`}
-                    style={selected ? { boxShadow: "inset 0 -2px 0 #3ecf8e" } : undefined}
+                    className="choice-btn"
                     onClick={() => setIdentity(id)}
                   >
                     {identityLabel(id)}
@@ -261,42 +250,45 @@ export function LabView({
           </fieldset>
 
           {identity === "service_role" ? (
-            <div className="mt-4 border border-danger px-3 py-3 text-sm" role="status">
-              <p className="font-semibold">service_role bypasses row level security</p>
-              <p className="mt-1 text-muted">
-                Policies do not run for this role. A secret key in a browser can read every row the grants allow. This lab never asks for that key.
+            <div className="notice warn" role="status" style={{ marginTop: 16 }}>
+              <p>
+                <strong>service_role bypasses row level security.</strong> Policies do not run for this role. A secret key in a browser can read every row the grants allow. This lab never asks for that key.
               </p>
             </div>
           ) : null}
 
           {scenario.toolCall ? (
-            <div className="mt-4 border border-line bg-surface px-3 py-3 text-sm">
-              <p className="font-mono text-xs text-brand">{scenario.toolCall.name}</p>
-              <p className="mt-2 leading-relaxed">{scenario.toolCall.detail}</p>
+            <div className="notice" style={{ marginTop: 16 }}>
+              <p>
+                <strong className="sqlstate">{scenario.toolCall.name}</strong>
+              </p>
+              <p>{scenario.toolCall.detail}</p>
             </div>
           ) : null}
 
           {!configured ? (
-            <p className="mt-4 border border-line px-3 py-3 text-sm text-muted">
-              This page renders without a project. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to execute the lab. Use the publishable key, never the secret key.
-            </p>
+            <div className="notice" style={{ marginTop: 16 }}>
+              <p>
+                This page renders without a project. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to execute the lab. Use the publishable key, never the secret key.
+              </p>
+            </div>
           ) : null}
 
           <section className="mt-6" aria-labelledby="result-heading">
             <div className="flex items-baseline justify-between gap-3">
-              <h2 id="result-heading" className="text-lg font-semibold">
+              <h2 id="result-heading" className="text-lg font-medium">
                 Result
               </h2>
               <p className="font-mono text-xs text-muted">{running ? "Running" : summary ? summary.kicker : "Not run"}</p>
             </div>
-            <pre className="mt-3 overflow-x-auto whitespace-pre-wrap border border-line bg-inset p-3 text-xs leading-relaxed text-muted">
+            <pre className="lab-query" style={{ marginTop: 12 }}>
               {scenario.query}
             </pre>
             <div className="mt-3">
               {result && result.sqlstate === "42501" ? (
-                <div className="border border-danger px-4 py-4">
-                  <p className="font-mono text-sm text-danger">42501</p>
-                  <p className="mt-2 text-lg font-semibold">Grant layer, not policy</p>
+                <div className="notice warn">
+                  <p className="sqlstate" style={{ color: "var(--correct)", fontSize: 18 }}>42501</p>
+                  <p className="mt-2 text-lg font-medium">Grant layer, not policy</p>
                   <p className="mt-2 text-sm leading-relaxed text-muted">{summary?.detail}</p>
                   {result.errorMessage ? (
                     <p className="mt-3 font-mono text-xs">{result.errorMessage}</p>
@@ -319,7 +311,7 @@ export function LabView({
           </section>
 
           <section className="mt-8" aria-labelledby="editor-heading">
-            <h2 id="editor-heading" className="text-lg font-semibold">
+            <h2 id="editor-heading" className="text-lg font-medium">
               Policies and grants
             </h2>
             <label className="mt-3 block text-sm text-muted" htmlFor="policy-sql">
@@ -340,17 +332,17 @@ export function LabView({
               }}
             />
             <p className={`mt-2 text-sm ${parsed.ok ? "text-muted" : "text-danger"}`}>
-              {parsed.ok ? "SQL is allowed." : parsed.detail}
+              {parsed.ok ? "SQL is allowed" : parsed.detail}
             </p>
             {readOnly ? null : (
-              <div className="mt-3 flex gap-2 overflow-x-auto">
+              <div className="chip-row">
                 {scenario.chips.map((chip) => {
                   const selected = chip.id === activeChip;
                   return (
                     <button
                       key={chip.id}
                       type="button"
-                      className={`shrink-0 border px-3 py-2 text-left text-sm ${selected ? "border-brand text-brand" : "border-line"}`}
+                      className={`btn btn-small ${selected ? "" : "btn-quiet"}`}
                       onClick={() => {
                         setSql(chip.sql);
                         setGeneration((value) => value + 1);
@@ -368,21 +360,21 @@ export function LabView({
               </p>
             ) : null}
             <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" className="bg-brand px-4 py-2 text-sm font-semibold text-canvas" onClick={runNow}>
+              <button type="button" className="btn" onClick={runNow}>
                 Run
               </button>
-              <button type="button" className="border border-line px-4 py-2 text-sm" onClick={() => void copySql()}>
+              <button type="button" className="btn btn-quiet" onClick={() => void copySql()}>
                 Copy SQL
               </button>
               {readOnly ? (
                 <Link
                   href={`/lab/${scenario.slug}?share=${shareId ?? ""}`}
-                  className="border border-line px-4 py-2 text-sm"
+                  className="btn btn-quiet"
                 >
                   Fork this
                 </Link>
               ) : (
-                <button type="button" className="border border-line px-4 py-2 text-sm" onClick={() => void share()}>
+                <button type="button" className="btn btn-quiet" onClick={() => void share()}>
                   Share
                 </button>
               )}
@@ -469,8 +461,9 @@ function RowList({
                 key={row.id}
                 className="cursor-pointer border-t border-line"
                 onClick={() => onSelect(row.id)}
+                style={visible.has(row.id) ? { boxShadow: "inset 2px 0 0 #3ecf8e" } : undefined}
               >
-                <td className="px-3 py-3 align-top" style={{ color: visible.has(row.id) ? "#3ecf8e" : undefined }}>
+                <td className="px-3 py-3 align-top">
                   {row.decision}
                 </td>
                 <td className="px-3 py-3 align-top">{String(row.data.title ?? "")}</td>
@@ -500,7 +493,7 @@ function RowBody({
   return (
     <>
       <p className="text-xs text-muted">{decision}{selected ? " · trace" : ""}</p>
-      <p className="mt-1 font-semibold">{title}</p>
+      <p className="mt-1 font-medium">{title}</p>
       <div className="mt-2">
         <FieldList data={data} />
       </div>
@@ -542,12 +535,12 @@ function TracePanel({
 }) {
   const body = (
     <div>
-      <h2 className="text-lg font-semibold">Trace</h2>
-      {result ? <p className="mt-1 text-sm text-brand">{summaryKicker}</p> : null}
+      <h2 className="text-lg font-medium">Trace</h2>
+      {result ? <p className="mt-1 text-sm text-muted">{summaryKicker}</p> : null}
       <p className="mt-3 text-sm leading-relaxed">{summaryDetail}</p>
       {result ? (
         <>
-          <h3 className="mt-5 text-sm font-semibold">Grants on {result.table}</h3>
+          <h3 className="mt-5 text-sm font-medium">Grants on {result.table}</h3>
           <ul className="mt-2 space-y-1 font-mono text-xs">
             {result.grants.map((grant) => (
               <li key={grant.privilege} className="flex justify-between gap-4 border-b border-line py-1">
@@ -558,15 +551,15 @@ function TracePanel({
               </li>
             ))}
           </ul>
-          <h3 className="mt-5 text-sm font-semibold">Rows</h3>
+          <h3 className="mt-5 text-sm font-medium">Rows</h3>
           <div className="mt-2 space-y-4">
             {result.rows.map((row) => {
               const id = String(row.data.id);
               const decision = describeRow(row, result);
               const focused = selectedId === id;
               return (
-                <article key={id} className={`border px-3 py-3 ${focused ? "border-brand" : "border-line"}`}>
-                  <p className="text-sm font-semibold">{String(row.data.title ?? id)}</p>
+                <article key={id} className={`border px-3 py-3 ${focused ? "border-ink" : "border-line"}`}>
+                  <p className="text-sm font-medium">{String(row.data.title ?? id)}</p>
                   <p className="mt-1 text-xs text-muted">{decision.label}. {decision.detail}</p>
                   <ul className="mt-3 space-y-3">
                     {row.checks.map((check) => {
@@ -631,7 +624,7 @@ function OtherPolicies({ policies, table }: { policies: PolicyDef[]; table: stri
   if (others.length === 0) return null;
   return (
     <>
-      <h3 className="mt-5 text-sm font-semibold">Other tables</h3>
+      <h3 className="mt-5 text-sm font-medium">Other tables</h3>
       <ul className="mt-2 space-y-2 text-xs text-muted">
         {others.map((policy) => (
           <li key={`${policy.table}:${policy.name}`}>

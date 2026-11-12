@@ -12,6 +12,9 @@
     "test:sql": "bash scripts/test-sql.sh"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/manrope": "^5.3.0",
+    "@fontsource/source-code-pro": "^5.3.1",
     "@supabase/supabase-js": "^2.81.1",
     "next": "^15.5.6",
     "react": "^19.2.0",

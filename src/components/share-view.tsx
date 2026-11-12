@@ -56,18 +56,16 @@ export function ShareView({ id }: { id: string }) {
 
   if (!scenario || sql === null) {
     return (
-      <main className="pt-10">
-        <p className="text-sm text-muted">Shared snapshot</p>
-        <h1 className="mt-3 text-3xl font-semibold">Share</h1>
-        <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-          {message ?? "Loading the snapshot."}
-        </p>
-        <p className="mt-6">
-          <Link href="/" className="text-sm underline decoration-line underline-offset-4">
-            Back to scenarios
+      <div className="page-head">
+        <p className="updated">Shared snapshot</p>
+        <h1>Share</h1>
+        <p>{message ?? "Loading the snapshot."}</p>
+        <p>
+          <Link href="/" className="btn">
+            Back to the start
           </Link>
         </p>
-      </main>
+      </div>
     );
   }
 

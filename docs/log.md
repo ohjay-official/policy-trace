@@ -15,6 +15,7 @@
   - Reproduced as a non-superuser member of anon, authenticated, and service_role. `CREATE FUNCTION` in `lab_internal` succeeds. `ALTER FUNCTION ... OWNER TO anon` then fails, because a non-superuser can hand a function to a role only when that role has `CREATE` on the schema. Superuser skips the check, which is why the first CI run passed.
   - The evaluator migration now grants `USAGE` and `CREATE` for that ownership change only, copies the query function into each role-owned function, and revokes the schema privileges again. anon, authenticated, and service_role finish with no privileges on `lab_internal`.
   - `npm run test:sql` applies the migrations as that non-superuser, twice.
+- 2026-11-12: UI pass. Unslop kept green on a returned row and an allowed grant. The home page then took The Panel's stage, loader, type, and square controls, on the Supabase dark canvas. Inter, Source Code Pro, and Manrope are self-hosted. The evaluator, SQL, and RPCs are unchanged.
 - 2026-11-12: Silent update failed through PostgREST with sqlstate 21000, "UPDATE requires a WHERE clause".
   - Confirmed with pg-safeupdate loaded: direct SQL as a superuser succeeds, and the same `run_lab` call returns 21000 once the library is loaded. The statement is `update lab_sandbox.__after_<table> set status = 'closed'` in `evaluate_lab`, used to project the new row for WITH CHECK. The scenario UPDATE already has a WHERE. No evaluator DELETE lacks one.
   - `WHERE true` keeps every copied row and satisfies safeupdate (`quals` is not null).

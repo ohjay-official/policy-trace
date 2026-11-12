@@ -1,49 +1,70 @@
 import Link from "next/link";
-import { SCENARIOS } from "@/lib/scenarios";
+import { Faq } from "@/components/faq";
+import { Reveal } from "@/components/reveal";
+import { Stage } from "@/components/stage";
 
 const tutorial = "https://github.com/ohjay-official/policy-trace#tutorial";
 
 export default function HomePage() {
   return (
-    <main className="pt-8">
-      <header className="border-b border-line pb-8">
-        <p className="text-sm text-muted">Independent community project</p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight">Policy Trace</h1>
-        <p className="mt-4 max-w-2xl text-lg leading-relaxed">
-          See whether a row was stopped by a grant or filtered by a policy.
-        </p>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
-          Pick a scenario, choose who is running the query, and edit the policies. The lab runs that SQL as the role, with JWT claims set, inside a transaction that always rolls back.
-        </p>
-        <p className="mt-6">
-          <a className="text-sm underline decoration-line underline-offset-4" href={tutorial}>
-            Read the tutorial
-          </a>
-        </p>
-      </header>
-
-      <section className="mt-8" aria-labelledby="scenarios-heading">
-        <h2 id="scenarios-heading" className="text-xl font-semibold">
-          Scenarios
+    <>
+      <Stage />
+      <Reveal className="runs-on" aria-labelledby="stack-title">
+        <h2 id="stack-title" className="visually-hidden">
+          What it runs on
         </h2>
-        <ol className="mt-4 divide-y divide-line border-y border-line">
-          {SCENARIOS.map((scenario, index) => (
-            <li key={scenario.slug} className="py-5">
-              <div className="flex items-baseline gap-4">
-                <span className="w-8 font-mono text-sm text-muted">0{index + 1}</span>
-                <div className="min-w-0">
-                  <h3 className="text-lg font-semibold">
-                    <Link href={`/lab/${scenario.slug}`} className="underline decoration-line underline-offset-4">
-                      {scenario.title}
-                    </Link>
-                  </h3>
-                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{scenario.summary}</p>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ol>
+        <div>
+          <b>Supabase Postgres</b>
+          <span>The database the lab runs against</span>
+        </div>
+        <div>
+          <b>Row level security and grants</b>
+          <span>The two checks before a row comes back</span>
+        </div>
+        <div>
+          <b>Next.js on Vercel</b>
+          <span>The site that calls the Data API</span>
+        </div>
+      </Reveal>
+
+      <Reveal className="section" aria-labelledby="rules-title">
+        <div className="section-head">
+          <h2 id="rules-title">What the empty array will not tell you</h2>
+          <p>The Data API can look quiet when a grant or a policy is the thing that stopped the row.</p>
+        </div>
+        <div className="glow-cards stagger">
+          <article className="glow-card">
+            <span className="gc-index">Grant</span>
+            <h3>42501</h3>
+            <p>A missing GRANT stops the query before any policy runs.</p>
+          </article>
+          <article className="glow-card">
+            <span className="gc-index">Policy</span>
+            <h3>No rows</h3>
+            <p>A missing SELECT policy returns an empty result and no error.</p>
+          </article>
+          <article className="glow-card">
+            <span className="gc-index">Rollback</span>
+            <h3>Nothing sticks</h3>
+            <p>Every run is a transaction that rolls back. The sandbox does not keep the edit.</p>
+          </article>
+        </div>
+        <p className="aside">
+          The walkthrough for each scenario is in the <a href={tutorial}>tutorial</a>.
+        </p>
+      </Reveal>
+
+      <Faq />
+
+      <section className="cta-band">
+        <div>
+          <h2>Open a scenario and run it.</h2>
+          <p>Switch who is asking, edit the policy, and read the trace.</p>
+        </div>
+        <Link href="/lab/missing-grant" className="btn btn-lg">
+          Open the lab
+        </Link>
       </section>
-    </main>
+    </>
   );
 }
