@@ -29,17 +29,24 @@ export default async function LabPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ share?: string; as?: string }>;
+  searchParams: Promise<{ share?: string; as?: string; chip?: string }>;
 }) {
   const { slug } = await params;
   const query = await searchParams;
   const scenario = getScenario(slug);
   if (!scenario) notFound();
   const initialIdentity = isIdentity(query.as) ? query.as : scenario.defaultIdentity;
+  const initialChip = scenario.chips.some((chip) => chip.id === query.chip) ? (query.chip ?? null) : null;
+  const search = new URLSearchParams();
+  if (query.share) search.set("share", query.share);
+  search.set("as", initialIdentity);
+  if (initialChip) search.set("chip", initialChip);
   return (
     <LabView
       scenario={scenario}
       initialIdentity={initialIdentity}
+      initialChip={initialChip}
+      initialQuery={search.toString()}
       shareId={query.share ?? null}
       readOnly={false}
     />

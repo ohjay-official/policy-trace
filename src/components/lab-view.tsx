@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { Check, Copy, Minus, Share2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fieldLabel, formatField } from "@/lib/people";
 import { parsePolicyScript } from "@/lib/sql-whitelist";
+import { labSearch } from "@/lib/lab-url";
 import { shareLoadOutcome } from "@/lib/share-load";
 import { getSupabase, supabaseConfig } from "@/lib/supabase";
 import { SCENARIOS, type Scenario } from "@/lib/scenarios";
@@ -43,18 +45,26 @@ const IDENTITY_SUB: Record<IdentityId, string | null> = {
 export function LabView({
   scenario,
   initialIdentity,
+  initialChip = null,
+  initialQuery = "",
   shareId,
   readOnly,
   initialSql,
 }: {
   scenario: Scenario;
   initialIdentity: IdentityId;
+  initialChip?: string | null;
+  initialQuery?: string;
   shareId: string | null;
   readOnly: boolean;
   initialSql?: string;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const queryRef = useRef(initialQuery);
+  const chipSql = scenario.chips.find((chip) => chip.id === initialChip)?.sql;
   const [identity, setIdentity] = useState<IdentityId>(initialIdentity);
-  const [sql, setSql] = useState(initialSql ?? scenario.chips[0]?.sql ?? "");
+  const [sql, setSql] = useState(initialSql ?? chipSql ?? scenario.chips[0]?.sql ?? "");
   const [generation, setGeneration] = useState(0);
   const [ready, setReady] = useState(!shareId);
   const [running, setRunning] = useState(false);
@@ -75,6 +85,13 @@ export function LabView({
   );
   const configured = supabaseConfig() !== null;
   const activeChip = scenario.chips.find((chip) => chip.sql === sql)?.id ?? null;
+
+  function remember(nextIdentity: IdentityId, nextChip: string | null) {
+    if (readOnly) return;
+    const next = labSearch(queryRef.current, nextIdentity, nextChip);
+    queryRef.current = next;
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+  }
 
   useEffect(() => {
     if (!shareId || initialSql) {
@@ -252,7 +269,10 @@ export function LabView({
                     role="radio"
                     aria-checked={selected}
                     className="choice-btn"
-                    onClick={() => setIdentity(id)}
+                    onClick={() => {
+                      setIdentity(id);
+                      remember(id, activeChip);
+                    }}
                   >
                     {identityLabel(id)}
                   </button>
@@ -345,7 +365,12 @@ export function LabView({
               spellCheck={false}
               value={sql}
               readOnly={readOnly}
-              onChange={(event) => setSql(event.target.value)}
+              onChange={(event) => {
+                const next = event.target.value;
+                setSql(next);
+                const chip = scenario.chips.find((item) => item.sql === next)?.id ?? null;
+                if (chip !== activeChip) remember(identity, chip);
+              }}
               onKeyDown={(event) => {
                 if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !readOnly) {
                   event.preventDefault();
@@ -368,6 +393,7 @@ export function LabView({
                       onClick={() => {
                         setSql(chip.sql);
                         setGeneration((value) => value + 1);
+                        remember(identity, chip.id);
                       }}
                     >
                       {chip.label}
