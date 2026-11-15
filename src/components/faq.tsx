@@ -29,15 +29,13 @@ const QA = [
   },
 ];
 
+export function nextFaqOpen(open: number | null, index: number): number | null {
+  return open === index ? null : index;
+}
+
 export function Faq() {
-  const [open, setOpen] = useState(() => new Set([0, 1]));
-  const toggle = (i: number) =>
-    setOpen((current) => {
-      const next = new Set(current);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
-      return next;
-    });
+  const [open, setOpen] = useState<number | null>(0);
+  const toggle = (index: number) => setOpen((current) => nextFaqOpen(current, index));
 
   return (
     <section className="section faq" aria-labelledby="faq-title">
@@ -51,7 +49,7 @@ export function Faq() {
       </div>
       <div className="faq-list">
         {QA.map(({ q, a }, i) => {
-          const isOpen = open.has(i);
+          const isOpen = open === i;
           return (
             <div key={q} className={`faq-item ${isOpen ? "open" : ""}`}>
               <h3>
