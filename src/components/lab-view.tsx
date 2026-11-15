@@ -5,6 +5,7 @@ import { Check, Copy, Minus, Share2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fieldLabel, formatField } from "@/lib/people";
 import { parsePolicyScript } from "@/lib/sql-whitelist";
+import { shareLoadOutcome } from "@/lib/share-load";
 import { getSupabase, supabaseConfig } from "@/lib/supabase";
 import { SCENARIOS, type Scenario } from "@/lib/scenarios";
 import {
@@ -59,6 +60,7 @@ export function LabView({
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<LabSuccess | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareNote, setShareNote] = useState<string | null>(null);
   const [traceOpen, setTraceOpen] = useState(false);
@@ -81,25 +83,23 @@ export function LabView({
     }
     const client = getSupabase();
     if (!client || !/^[0-9a-f-]{36}$/i.test(shareId)) {
-      setMessage("This share link could not be loaded.");
+      setShareError(shareLoadOutcome(scenario.slug, { invalid: true }).error);
       setReady(true);
       return;
     }
     let cancelled = false;
     void client.rpc("get_lab_share", { p_id: shareId }).then(({ data, error }) => {
       if (cancelled) return;
-      if (error || !data || typeof data !== "object") {
-        setMessage(error?.message ?? "This share link could not be loaded.");
+      const outcome = shareLoadOutcome(scenario.slug, {
+        error: error?.message ?? (data && typeof data === "object" ? null : "This share link could not be loaded."),
+        payload: data && typeof data === "object" ? (data as { ok?: boolean; scenario?: string; policySql?: string; detail?: string }) : null,
+      });
+      if (outcome.sql) {
+        setSql(outcome.sql);
+        setGeneration((value) => value + 1);
+        setShareError(null);
       } else {
-        const payload = data as { ok?: boolean; scenario?: string; policySql?: string; detail?: string };
-        if (payload.ok && payload.scenario === scenario.slug && typeof payload.policySql === "string") {
-          setSql(payload.policySql);
-          setGeneration((value) => value + 1);
-        } else if (payload.ok && payload.scenario && payload.scenario !== scenario.slug) {
-          setMessage(`This snapshot belongs to ${payload.scenario}.`);
-        } else {
-          setMessage(payload.detail ?? "This share link could not be loaded.");
-        }
+        setShareError(outcome.error);
       }
       setReady(true);
     });
@@ -279,6 +279,12 @@ export function LabView({
                 <strong className="sqlstate">{scenario.toolCall.name}</strong>
               </p>
               <p>{scenario.toolCall.detail}</p>
+            </div>
+          ) : null}
+
+          {shareError ? (
+            <div className="notice warn" role="alert" style={{ marginTop: 16 }}>
+              <p>{shareError}</p>
             </div>
           ) : null}
 
