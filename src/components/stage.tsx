@@ -72,6 +72,7 @@ const STATES: StageDef[] = [
   },
 ];
 
+const PORTAL_RATIO = 330 / 300;
 const LAST = STATES.length - 1;
 const UNITS = STATES.length;
 const FOCAL = 850;
@@ -98,6 +99,25 @@ function roundedRectPoints(w: number, h: number, r: number) {
     }
   }
   return pts;
+}
+
+function fittedPortal(pr: DOMRect, sr: DOMRect) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  let width = pr.width;
+  let height = pr.height;
+  if (vw <= 640) {
+    width = Math.min(240, vw * 0.62);
+    height = width * PORTAL_RATIO;
+  } else if (vw <= 1100 && vh >= 900) {
+    width = Math.min(460, vw * 0.52);
+    height = width * PORTAL_RATIO;
+  } else if (width > 0 && (height < 20 || Math.abs(height / width - PORTAL_RATIO) > 0.25)) {
+    height = width * PORTAL_RATIO;
+  }
+  const cx = pr.left - sr.left + pr.width / 2;
+  const cy = pr.top - sr.top + (pr.height > 20 ? pr.height / 2 : height / 2);
+  return { cx, cy, w: width, h: height };
 }
 
 function project(pts: [number, number][], cx: number, cy: number, rxDeg: number, ryDeg: number) {
@@ -157,8 +177,8 @@ export function Stage() {
       cv.style.height = `${H}px`;
       const pr = portal.current?.getBoundingClientRect();
       const box = pr && pr.width
-        ? { cx: pr.left - r.left + pr.width / 2, cy: pr.top - r.top + pr.height / 2, w: pr.width, h: pr.height }
-        : { cx: W / 2, cy: H / 2, w: 300, h: 330 };
+        ? fittedPortal(pr, r)
+        : { cx: W / 2, cy: H * 0.42, w: Math.min(300, W * 0.24), h: Math.min(300, W * 0.24) * PORTAL_RATIO };
       scenes = {};
       for (const key of ["lab", "grant", "agent", "using", "silent", "team"]) {
         scenes[key] = renderScene(key, W, H, dpr, box);
@@ -223,12 +243,13 @@ export function Stage() {
       const pr = portal.current?.getBoundingClientRect();
       const sr = st.getBoundingClientRect();
       if (pr && pr.width > 0) {
-        const rcx = pr.left - sr.left + pr.width / 2;
-        const rcy = pr.top - sr.top + pr.height / 2;
+        const fit = fittedPortal(pr, sr);
+        const rcx = fit.cx;
+        const rcy = fit.cy;
         const cx = rcx + (W / 2 - rcx) * e;
         const cy = rcy + (H / 2 - rcy) * e;
-        const bw = pr.width + (W - pr.width) * e;
-        const bh = pr.height + (H - pr.height) * e;
+        const bw = fit.w + (W - fit.w) * e;
+        const bh = fit.h + (H - fit.h) * e;
         const s = e ? 1 : maskScale;
         const w = bw * s;
         const h = bh * s;
@@ -249,7 +270,13 @@ export function Stage() {
           }
           ctx.save();
           ctx.clip();
+          const grow = fit.w > 0 ? w / fit.w : 1;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.scale(grow, grow);
+          ctx.translate(-fit.cx, -fit.cy);
           cover(nextScene);
+          ctx.restore();
           paper(ramp(e, 0.55, 1));
           ctx.restore();
         }

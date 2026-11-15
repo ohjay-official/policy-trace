@@ -129,7 +129,7 @@ export function renderScene(
   if (!ctx) return canvas;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   base(ctx, w, h);
-  const k = Math.min((box.w * 0.84) / DW, (box.h * 0.82) / DH, 1.6);
+  const k = Math.min((box.w * 0.92) / DW, (box.h * 0.9) / DH);
   ctx.translate(box.cx, box.cy);
   ctx.scale(k, k);
   (FOCUS[key] ?? FOCUS.lab)(ctx);

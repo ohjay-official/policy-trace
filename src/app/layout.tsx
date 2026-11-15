@@ -26,6 +26,7 @@ export const viewport: Viewport = {
   themeColor: "#1C1C1C",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 const BOOT = "document.documentElement.classList.add('js')";
@@ -33,10 +34,8 @@ const BOOT = "document.documentElement.classList.add('js')";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: BOOT }} />
-      </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: BOOT }} />
         <a className="visually-hidden" href="#main">
           Skip to content
         </a>
