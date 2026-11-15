@@ -1,4 +1,3 @@
-const INK = "#111111";
 const PAPER = "#f8f8f8";
 const DIM = "rgba(248,248,248,0.62)";
 const RULE = "rgba(248,248,248,0.16)";
@@ -99,7 +98,10 @@ const FOCUS: Record<string, (ctx: CanvasRenderingContext2D) => void> = {
 };
 
 function base(ctx: CanvasRenderingContext2D, w: number, h: number) {
-  ctx.fillStyle = INK;
+  const wash = ctx.createLinearGradient(0, 0, 0, h);
+  wash.addColorStop(0, "#1f2a24");
+  wash.addColorStop(1, "#171717");
+  ctx.fillStyle = wash;
   ctx.fillRect(0, 0, w, h);
   ctx.strokeStyle = "rgba(248,248,248,0.05)";
   ctx.lineWidth = 1;

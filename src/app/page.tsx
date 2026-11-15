@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Database, Eye, RotateCcw, ShieldCheck, SquareStack } from "lucide-react";
 import { Faq } from "@/components/faq";
 import { Reveal } from "@/components/reveal";
 import { Stage } from "@/components/stage";
@@ -13,15 +14,24 @@ export default function HomePage() {
         <h2 id="stack-title" className="visually-hidden">
           What it runs on
         </h2>
-        <div>
+        <div className="stack-cell">
+          <span className="icon-badge">
+            <Database aria-hidden="true" />
+          </span>
           <b>Supabase Postgres</b>
           <span>The database the lab runs against</span>
         </div>
-        <div>
+        <div className="stack-cell">
+          <span className="icon-badge">
+            <ShieldCheck aria-hidden="true" />
+          </span>
           <b>Row level security and grants</b>
           <span>The two checks before a row comes back</span>
         </div>
-        <div>
+        <div className="stack-cell">
+          <span className="icon-badge">
+            <SquareStack aria-hidden="true" />
+          </span>
           <b>Next.js on Vercel</b>
           <span>The site that calls the Data API</span>
         </div>
@@ -34,17 +44,32 @@ export default function HomePage() {
         </div>
         <div className="glow-cards stagger">
           <article className="glow-card">
-            <span className="gc-index">Grant</span>
+            <span className="gc-index">
+              <span className="icon-badge">
+                <ShieldCheck aria-hidden="true" />
+              </span>
+              Grant
+            </span>
             <h3>42501</h3>
             <p>A missing GRANT stops the query before any policy runs.</p>
           </article>
           <article className="glow-card">
-            <span className="gc-index">Policy</span>
+            <span className="gc-index">
+              <span className="icon-badge">
+                <Eye aria-hidden="true" />
+              </span>
+              Policy
+            </span>
             <h3>No rows</h3>
             <p>A missing SELECT policy returns an empty result and no error.</p>
           </article>
           <article className="glow-card">
-            <span className="gc-index">Rollback</span>
+            <span className="gc-index">
+              <span className="icon-badge">
+                <RotateCcw aria-hidden="true" />
+              </span>
+              Rollback
+            </span>
             <h3>Nothing sticks</h3>
             <p>Every run is a transaction that rolls back. The sandbox does not keep the edit.</p>
           </article>

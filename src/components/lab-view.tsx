@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Check, Copy, Minus, Share2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fieldLabel, formatField } from "@/lib/people";
 import { parsePolicyScript } from "@/lib/sql-whitelist";
@@ -364,6 +365,9 @@ export function LabView({
                 Run
               </button>
               <button type="button" className="btn btn-quiet" onClick={() => void copySql()}>
+                <span className="icon-badge">
+                  <Copy aria-hidden="true" />
+                </span>
                 Copy SQL
               </button>
               {readOnly ? (
@@ -375,6 +379,9 @@ export function LabView({
                 </Link>
               ) : (
                 <button type="button" className="btn btn-quiet" onClick={() => void share()}>
+                  <span className="icon-badge">
+                    <Share2 aria-hidden="true" />
+                  </span>
                   Share
                 </button>
               )}
@@ -400,6 +407,18 @@ export function LabView({
         />
       </div>
     </div>
+  );
+}
+
+function DecisionMark({ decision }: { decision: string }) {
+  const idle = decision === "Not run";
+  const ok = /^(Returned|Updated)/.test(decision);
+  const Icon = idle ? Minus : ok ? Check : X;
+  const tone = idle ? "muted" : ok ? "green" : "red";
+  return (
+    <span className={`icon-badge icon-badge-${tone}`}>
+      <Icon aria-hidden="true" />
+    </span>
   );
 }
 
@@ -464,7 +483,10 @@ function RowList({
                 style={visible.has(row.id) ? { boxShadow: "inset 2px 0 0 #3ecf8e" } : undefined}
               >
                 <td className="px-3 py-3 align-top">
-                  {row.decision}
+                  <span className="decision">
+                    <DecisionMark decision={row.decision} />
+                    {row.decision}
+                  </span>
                 </td>
                 <td className="px-3 py-3 align-top">{String(row.data.title ?? "")}</td>
                 <td className="px-3 py-3 align-top">
@@ -492,7 +514,11 @@ function RowBody({
 }) {
   return (
     <>
-      <p className="text-xs text-muted">{decision}{selected ? " · trace" : ""}</p>
+      <p className="decision text-xs text-muted">
+        <DecisionMark decision={decision} />
+        {decision}
+        {selected ? " · trace" : ""}
+      </p>
       <p className="mt-1 font-medium">{title}</p>
       <div className="mt-2">
         <FieldList data={data} />
@@ -574,7 +600,8 @@ function TracePanel({
             {result.grants.map((grant) => (
               <li key={grant.privilege} className="flex justify-between gap-4 border-b border-line py-1">
                 <span>{grant.privilege}</span>
-                <span className={grant.allowed ? "text-brand" : "text-danger"}>
+                <span className={`decision ${grant.allowed ? "text-brand" : "text-danger"}`}>
+                  <DecisionMark decision={grant.allowed ? "Returned" : "Filtered"} />
                   {grant.allowed ? "allowed" : "denied"}
                 </span>
               </li>

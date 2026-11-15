@@ -244,6 +244,11 @@ export function Stage() {
       const sr = st.getBoundingClientRect();
       if (pr && pr.width > 0) {
         const fit = fittedPortal(pr, sr);
+        const glow = ctx.createRadialGradient(fit.cx, fit.cy, 12, fit.cx, fit.cy, Math.max(fit.w, fit.h) * 1.8);
+        glow.addColorStop(0, "rgba(62,207,142,0.16)");
+        glow.addColorStop(1, "rgba(62,207,142,0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, W, H);
         const rcx = fit.cx;
         const rcy = fit.cy;
         const cx = rcx + (W / 2 - rcx) * e;
@@ -278,6 +283,16 @@ export function Stage() {
           cover(nextScene);
           ctx.restore();
           paper(ramp(e, 0.55, 1));
+          ctx.restore();
+          ctx.save();
+          ctx.beginPath();
+          pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+          ctx.closePath();
+          ctx.strokeStyle = "rgba(62,207,142,0.95)";
+          ctx.lineWidth = 1.5;
+          ctx.shadowColor = "rgba(62,207,142,0.55)";
+          ctx.shadowBlur = 16;
+          ctx.stroke();
           ctx.restore();
         }
       }
