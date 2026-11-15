@@ -56,6 +56,16 @@ export function formatTrace(result: LabSuccess): TraceSummary {
   }
 
   if (result.identity.bypassesRls) {
+    if (result.operation === "update" && affected === 0) {
+      return {
+        layer: "bypass",
+        tone: "warn",
+        kicker: "RLS bypass",
+        headline: "UPDATE changed 0 rows",
+        detail:
+          "service_role bypasses row level security, but this query filters on auth.uid(), which is null for service_role, so 0 rows match.",
+      };
+    }
     return {
       layer: "bypass",
       tone: "warn",

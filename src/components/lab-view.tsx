@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { Check, Copy, Minus, Share2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { STATEMENT_TIMEOUT_NOTICE, isStatementTimeout, timeoutAttempt } from "@/lib/lab-run";
 import { fieldLabel, formatField } from "@/lib/people";
 import { parsePolicyScript } from "@/lib/sql-whitelist";
+import { labSearch } from "@/lib/lab-url";
+import { shareLoadOutcome } from "@/lib/share-load";
 import { getSupabase, supabaseConfig } from "@/lib/supabase";
-import type { Scenario } from "@/lib/scenarios";
+import { SCENARIOS, type Scenario } from "@/lib/scenarios";
 import {
   describeCheck,
   describeRow,
@@ -41,23 +45,30 @@ const IDENTITY_SUB: Record<IdentityId, string | null> = {
 export function LabView({
   scenario,
   initialIdentity,
+  initialChip = null,
+  initialQuery = "",
   shareId,
   readOnly,
   initialSql,
 }: {
   scenario: Scenario;
   initialIdentity: IdentityId;
+  initialChip?: string | null;
+  initialQuery?: string;
   shareId: string | null;
   readOnly: boolean;
   initialSql?: string;
 }) {
+  const queryRef = useRef(initialQuery);
+  const chipSql = scenario.chips.find((chip) => chip.id === initialChip)?.sql;
   const [identity, setIdentity] = useState<IdentityId>(initialIdentity);
-  const [sql, setSql] = useState(initialSql ?? scenario.chips[0]?.sql ?? "");
+  const [sql, setSql] = useState(initialSql ?? chipSql ?? scenario.chips[0]?.sql ?? "");
   const [generation, setGeneration] = useState(0);
   const [ready, setReady] = useState(!shareId);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<LabSuccess | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareNote, setShareNote] = useState<string | null>(null);
   const [traceOpen, setTraceOpen] = useState(false);
@@ -65,6 +76,11 @@ export function LabView({
   const sqlRef = useRef(sql);
   sqlRef.current = sql;
   const requestRef = useRef(0);
+  const retriedRef = useRef(false);
+  const retryScheduled = useRef(false);
+  const tablesKey = scenario.tables.join(",");
+  const tablesRef = useRef(scenario.tables);
+  tablesRef.current = scenario.tables;
 
   const parsed = useMemo(
     () => parsePolicyScript(sql, scenario.tables),
@@ -73,6 +89,16 @@ export function LabView({
   const configured = supabaseConfig() !== null;
   const activeChip = scenario.chips.find((chip) => chip.sql === sql)?.id ?? null;
 
+  function remember(nextIdentity: IdentityId, nextChip: string | null) {
+    if (readOnly) return;
+    retriedRef.current = false;
+    retryScheduled.current = false;
+    const next = labSearch(queryRef.current, nextIdentity, nextChip);
+    queryRef.current = next;
+    const url = `${window.location.pathname}${next ? `?${next}` : ""}${window.location.hash}`;
+    window.history.replaceState(window.history.state, "", url);
+  }
+
   useEffect(() => {
     if (!shareId || initialSql) {
       setReady(true);
@@ -80,25 +106,23 @@ export function LabView({
     }
     const client = getSupabase();
     if (!client || !/^[0-9a-f-]{36}$/i.test(shareId)) {
-      setMessage("This share link could not be loaded.");
+      setShareError(shareLoadOutcome(scenario.slug, { invalid: true }).error);
       setReady(true);
       return;
     }
     let cancelled = false;
     void client.rpc("get_lab_share", { p_id: shareId }).then(({ data, error }) => {
       if (cancelled) return;
-      if (error || !data || typeof data !== "object") {
-        setMessage(error?.message ?? "This share link could not be loaded.");
+      const outcome = shareLoadOutcome(scenario.slug, {
+        error: error?.message ?? (data && typeof data === "object" ? null : "This share link could not be loaded."),
+        payload: data && typeof data === "object" ? (data as { ok?: boolean; scenario?: string; policySql?: string; detail?: string }) : null,
+      });
+      if (outcome.sql) {
+        setSql(outcome.sql);
+        setGeneration((value) => value + 1);
+        setShareError(null);
       } else {
-        const payload = data as { ok?: boolean; scenario?: string; policySql?: string; detail?: string };
-        if (payload.ok && payload.scenario === scenario.slug && typeof payload.policySql === "string") {
-          setSql(payload.policySql);
-          setGeneration((value) => value + 1);
-        } else if (payload.ok && payload.scenario && payload.scenario !== scenario.slug) {
-          setMessage(`This snapshot belongs to ${payload.scenario}.`);
-        } else {
-          setMessage(payload.detail ?? "This share link could not be loaded.");
-        }
+        setShareError(outcome.error);
       }
       setReady(true);
     });
@@ -109,8 +133,12 @@ export function LabView({
 
   useEffect(() => {
     if (!ready) return;
+    const isRetry = retryScheduled.current;
+    retryScheduled.current = false;
+    if (!isRetry) retriedRef.current = false;
+    const tables = tablesRef.current;
     const currentSql = sqlRef.current;
-    const local = parsePolicyScript(currentSql, scenario.tables);
+    const local = parsePolicyScript(currentSql, tables);
     if (!local.ok) {
       setResult(null);
       setMessage(local.detail);
@@ -127,6 +155,7 @@ export function LabView({
       return;
     }
     const requestId = ++requestRef.current;
+    let cancelled = false;
     setRunning(true);
     setMessage(null);
     void client
@@ -136,8 +165,25 @@ export function LabView({
         p_identity: identity,
       })
       .then(({ data, error }) => {
-        if (requestId !== requestRef.current) return;
+        if (cancelled || requestId !== requestRef.current) return;
+        const failure = isLabFailure(data) ? data : null;
+        const timedOut = isStatementTimeout({
+          message: error?.message ?? failure?.detail,
+          code: (error as { code?: string } | null)?.code,
+          sqlstate: failure?.sqlstate,
+        });
+        if (timedOut && timeoutAttempt(retriedRef.current) === "retry") {
+          retriedRef.current = true;
+          retryScheduled.current = true;
+          setGeneration((value) => value + 1);
+          return;
+        }
         setRunning(false);
+        if (timedOut) {
+          setResult(null);
+          setMessage(STATEMENT_TIMEOUT_NOTICE);
+          return;
+        }
         if (error) {
           setResult(null);
           const missing = /function .* does not exist|PGRST202|schema cache/i.test(error.message);
@@ -153,17 +199,22 @@ export function LabView({
           setMessage(null);
           return;
         }
-        if (isLabFailure(data)) {
+        if (failure) {
           setResult(null);
-          setMessage(data.detail);
+          setMessage(failure.detail);
           return;
         }
         setResult(null);
         setMessage("The evaluator returned an unexpected payload.");
       });
-  }, [ready, generation, identity, scenario.slug, scenario.tables]);
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, generation, identity, scenario.slug, tablesKey]);
 
   function runNow() {
+    retriedRef.current = false;
+    retryScheduled.current = false;
     setGeneration((value) => value + 1);
   }
 
@@ -215,28 +266,33 @@ export function LabView({
   const sub = IDENTITY_SUB[identity];
 
   return (
-    <div className="pt-6 pb-24 lg:pb-0">
-      <header className="border-b border-line pb-4">
-        <p className="text-sm text-muted">Independent community project</p>
-        <p className="mt-2 text-sm">
-          <Link href="/" className="underline decoration-line underline-offset-4">
-            Policy Trace
-          </Link>
-        </p>
-      </header>
+    <div className="lab">
+      <div className="page-head" style={{ paddingBottom: 0 }}>
+        <h1>{scenario.title}</h1>
+        <p>{scenario.summary}</p>
+        <nav className="chip-row" aria-label="Scenarios">
+          {SCENARIOS.map((item) => {
+            const current = item.slug === scenario.slug;
+            return (
+              <Link
+                key={item.slug}
+                href={`/lab/${item.slug}`}
+                className={`btn btn-small ${current ? "" : "btn-quiet"}`}
+                aria-current={current ? "page" : undefined}
+              >
+                {item.title}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
 
-      <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8" style={{ marginTop: 28 }}>
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">{scenario.title}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">{scenario.summary}</p>
 
           <fieldset className="mt-6">
             <legend className="text-sm">Who is running the query</legend>
-            <div
-              role="radiogroup"
-              aria-label="Who is running the query"
-              className="mt-2 flex flex-wrap border border-line"
-            >
+            <div role="radiogroup" aria-label="Who is running the query" className="choice" style={{ marginTop: 8 }}>
               {IDENTITIES.map((id) => {
                 const selected = id === identity;
                 return (
@@ -245,9 +301,11 @@ export function LabView({
                     type="button"
                     role="radio"
                     aria-checked={selected}
-                    className={`px-3 py-2 text-sm ${selected ? "text-brand" : "text-ink"}`}
-                    style={selected ? { boxShadow: "inset 0 -2px 0 #3ecf8e" } : undefined}
-                    onClick={() => setIdentity(id)}
+                    className="choice-btn"
+                    onClick={() => {
+                      setIdentity(id);
+                      remember(id, activeChip);
+                    }}
                   >
                     {identityLabel(id)}
                   </button>
@@ -261,42 +319,51 @@ export function LabView({
           </fieldset>
 
           {identity === "service_role" ? (
-            <div className="mt-4 border border-danger px-3 py-3 text-sm" role="status">
-              <p className="font-semibold">service_role bypasses row level security</p>
-              <p className="mt-1 text-muted">
-                Policies do not run for this role. A secret key in a browser can read every row the grants allow. This lab never asks for that key.
+            <div className="notice warn" role="status" style={{ marginTop: 16 }}>
+              <p>
+                <strong>service_role bypasses row level security.</strong> Policies do not run for this role. A secret key in a browser can read every row the grants allow. This lab never asks for that key.
               </p>
             </div>
           ) : null}
 
           {scenario.toolCall ? (
-            <div className="mt-4 border border-line bg-surface px-3 py-3 text-sm">
-              <p className="font-mono text-xs text-brand">{scenario.toolCall.name}</p>
-              <p className="mt-2 leading-relaxed">{scenario.toolCall.detail}</p>
+            <div className="notice" style={{ marginTop: 16 }}>
+              <p>
+                <strong className="sqlstate">{scenario.toolCall.name}</strong>
+              </p>
+              <p>{scenario.toolCall.detail}</p>
+            </div>
+          ) : null}
+
+          {shareError ? (
+            <div className="notice warn" role="alert" style={{ marginTop: 16 }}>
+              <p>{shareError}</p>
             </div>
           ) : null}
 
           {!configured ? (
-            <p className="mt-4 border border-line px-3 py-3 text-sm text-muted">
-              This page renders without a project. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to execute the lab. Use the publishable key, never the secret key.
-            </p>
+            <div className="notice" style={{ marginTop: 16 }}>
+              <p>
+                This page renders without a project. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to execute the lab. Use the publishable key, never the secret key.
+              </p>
+            </div>
           ) : null}
 
           <section className="mt-6" aria-labelledby="result-heading">
             <div className="flex items-baseline justify-between gap-3">
-              <h2 id="result-heading" className="text-lg font-semibold">
+              <h2 id="result-heading" className="text-lg font-medium">
                 Result
               </h2>
               <p className="font-mono text-xs text-muted">{running ? "Running" : summary ? summary.kicker : "Not run"}</p>
             </div>
-            <pre className="mt-3 overflow-x-auto whitespace-pre-wrap border border-line bg-inset p-3 text-xs leading-relaxed text-muted">
+            <pre className="lab-query" style={{ marginTop: 12 }}>
               {scenario.query}
             </pre>
             <div className="mt-3">
               {result && result.sqlstate === "42501" ? (
-                <div className="border border-danger px-4 py-4">
-                  <p className="font-mono text-sm text-danger">42501</p>
-                  <p className="mt-2 text-lg font-semibold">Grant layer, not policy</p>
+                <div className="notice warn">
+                  <p className="sqlstate" style={{ color: "var(--correct)", fontSize: 18 }}>42501</p>
+                  <p className="mt-2 text-lg font-medium">Grant layer, not policy</p>
                   <p className="mt-2 text-sm leading-relaxed text-muted">{summary?.detail}</p>
                   {result.errorMessage ? (
                     <p className="mt-3 font-mono text-xs">{result.errorMessage}</p>
@@ -315,11 +382,22 @@ export function LabView({
                 />
               )}
             </div>
-            {message ? <p className="mt-3 text-sm text-danger">{message}</p> : null}
+            {message ? (
+              <div className="notice warn" role="alert" style={{ marginTop: 12 }}>
+                <p>{message}</p>
+                {message === STATEMENT_TIMEOUT_NOTICE ? (
+                  <p style={{ marginTop: 12 }}>
+                    <button type="button" className="btn btn-small" onClick={runNow}>
+                      Run again
+                    </button>
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </section>
 
           <section className="mt-8" aria-labelledby="editor-heading">
-            <h2 id="editor-heading" className="text-lg font-semibold">
+            <h2 id="editor-heading" className="text-lg font-medium">
               Policies and grants
             </h2>
             <label className="mt-3 block text-sm text-muted" htmlFor="policy-sql">
@@ -331,7 +409,12 @@ export function LabView({
               spellCheck={false}
               value={sql}
               readOnly={readOnly}
-              onChange={(event) => setSql(event.target.value)}
+              onChange={(event) => {
+                const next = event.target.value;
+                setSql(next);
+                const chip = scenario.chips.find((item) => item.sql === next)?.id ?? null;
+                if (chip !== activeChip) remember(identity, chip);
+              }}
               onKeyDown={(event) => {
                 if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !readOnly) {
                   event.preventDefault();
@@ -340,20 +423,21 @@ export function LabView({
               }}
             />
             <p className={`mt-2 text-sm ${parsed.ok ? "text-muted" : "text-danger"}`}>
-              {parsed.ok ? "SQL is allowed." : parsed.detail}
+              {parsed.ok ? "SQL is allowed" : parsed.detail}
             </p>
             {readOnly ? null : (
-              <div className="mt-3 flex gap-2 overflow-x-auto">
+              <div className="chip-row">
                 {scenario.chips.map((chip) => {
                   const selected = chip.id === activeChip;
                   return (
                     <button
                       key={chip.id}
                       type="button"
-                      className={`shrink-0 border px-3 py-2 text-left text-sm ${selected ? "border-brand text-brand" : "border-line"}`}
+                      className={`btn btn-small ${selected ? "" : "btn-quiet"}`}
                       onClick={() => {
                         setSql(chip.sql);
                         setGeneration((value) => value + 1);
+                        remember(identity, chip.id);
                       }}
                     >
                       {chip.label}
@@ -368,21 +452,27 @@ export function LabView({
               </p>
             ) : null}
             <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" className="bg-brand px-4 py-2 text-sm font-semibold text-canvas" onClick={runNow}>
+              <button type="button" className="btn" onClick={runNow}>
                 Run
               </button>
-              <button type="button" className="border border-line px-4 py-2 text-sm" onClick={() => void copySql()}>
+              <button type="button" className="btn btn-quiet" onClick={() => void copySql()}>
+                <span className="icon-badge">
+                  <Copy aria-hidden="true" />
+                </span>
                 Copy SQL
               </button>
               {readOnly ? (
                 <Link
                   href={`/lab/${scenario.slug}?share=${shareId ?? ""}`}
-                  className="border border-line px-4 py-2 text-sm"
+                  className="btn btn-quiet"
                 >
                   Fork this
                 </Link>
               ) : (
-                <button type="button" className="border border-line px-4 py-2 text-sm" onClick={() => void share()}>
+                <button type="button" className="btn btn-quiet" onClick={() => void share()}>
+                  <span className="icon-badge">
+                    <Share2 aria-hidden="true" />
+                  </span>
                   Share
                 </button>
               )}
@@ -408,6 +498,18 @@ export function LabView({
         />
       </div>
     </div>
+  );
+}
+
+function DecisionMark({ decision }: { decision: string }) {
+  const idle = decision === "Not run";
+  const ok = /^(Returned|Updated)/.test(decision);
+  const Icon = idle ? Minus : ok ? Check : X;
+  const tone = idle ? "muted" : ok ? "green" : "red";
+  return (
+    <span className={`icon-badge icon-badge-${tone}`}>
+      <Icon aria-hidden="true" />
+    </span>
   );
 }
 
@@ -469,9 +571,13 @@ function RowList({
                 key={row.id}
                 className="cursor-pointer border-t border-line"
                 onClick={() => onSelect(row.id)}
+                style={visible.has(row.id) ? { boxShadow: "inset 2px 0 0 #3ecf8e" } : undefined}
               >
-                <td className="px-3 py-3 align-top" style={{ color: visible.has(row.id) ? "#3ecf8e" : undefined }}>
-                  {row.decision}
+                <td className="px-3 py-3 align-top">
+                  <span className="decision">
+                    <DecisionMark decision={row.decision} />
+                    {row.decision}
+                  </span>
                 </td>
                 <td className="px-3 py-3 align-top">{String(row.data.title ?? "")}</td>
                 <td className="px-3 py-3 align-top">
@@ -499,8 +605,12 @@ function RowBody({
 }) {
   return (
     <>
-      <p className="text-xs text-muted">{decision}{selected ? " · trace" : ""}</p>
-      <p className="mt-1 font-semibold">{title}</p>
+      <p className="decision text-xs text-muted">
+        <DecisionMark decision={decision} />
+        {decision}
+        {selected ? " · trace" : ""}
+      </p>
+      <p className="mt-1 font-medium">{title}</p>
       <div className="mt-2">
         <FieldList data={data} />
       </div>
@@ -540,33 +650,99 @@ function TracePanel({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const barRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    const focusable = () =>
+      Array.from(
+        dialog?.querySelectorAll<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])") ?? [],
+      ).filter((el) => !el.hasAttribute("disabled"));
+    const bar = barRef.current;
+    focusable()[0]?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onOpenChange(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const list = focusable();
+      if (list.length === 0) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !dialog?.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !dialog?.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      bar?.focus();
+    };
+  }, [open, onOpenChange]);
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const query = window.matchMedia("(max-width: 1023px)");
+    const apply = () => {
+      if (!query.matches) {
+        document.documentElement.style.removeProperty("--trace-bar-height");
+        return;
+      }
+      const probe = document.createElement("div");
+      probe.style.cssText = "position:fixed;padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;";
+      document.body.appendChild(probe);
+      const safe = Number.parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+      probe.remove();
+      const face = Math.max(44, Math.round(bar.offsetHeight - safe));
+      document.documentElement.style.setProperty("--trace-bar-height", `${face}px`);
+    };
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(bar);
+    query.addEventListener("change", apply);
+    return () => {
+      observer.disconnect();
+      query.removeEventListener("change", apply);
+      document.documentElement.style.removeProperty("--trace-bar-height");
+    };
+  }, [summaryKicker, result]);
+
   const body = (
     <div>
-      <h2 className="text-lg font-semibold">Trace</h2>
-      {result ? <p className="mt-1 text-sm text-brand">{summaryKicker}</p> : null}
+      <h2 className="text-lg font-medium">Trace</h2>
+      {result ? <p className="mt-1 text-sm text-muted">{summaryKicker}</p> : null}
       <p className="mt-3 text-sm leading-relaxed">{summaryDetail}</p>
       {result ? (
         <>
-          <h3 className="mt-5 text-sm font-semibold">Grants on {result.table}</h3>
+          <h3 className="mt-5 text-sm font-medium">Grants on {result.table}</h3>
           <ul className="mt-2 space-y-1 font-mono text-xs">
             {result.grants.map((grant) => (
               <li key={grant.privilege} className="flex justify-between gap-4 border-b border-line py-1">
                 <span>{grant.privilege}</span>
-                <span className={grant.allowed ? "text-brand" : "text-danger"}>
+                <span className={`decision ${grant.allowed ? "text-brand" : "text-danger"}`}>
+                  <DecisionMark decision={grant.allowed ? "Returned" : "Filtered"} />
                   {grant.allowed ? "allowed" : "denied"}
                 </span>
               </li>
             ))}
           </ul>
-          <h3 className="mt-5 text-sm font-semibold">Rows</h3>
+          <h3 className="mt-5 text-sm font-medium">Rows</h3>
           <div className="mt-2 space-y-4">
             {result.rows.map((row) => {
               const id = String(row.data.id);
               const decision = describeRow(row, result);
               const focused = selectedId === id;
               return (
-                <article key={id} className={`border px-3 py-3 ${focused ? "border-brand" : "border-line"}`}>
-                  <p className="text-sm font-semibold">{String(row.data.title ?? id)}</p>
+                <article key={id} className={`border px-3 py-3 ${focused ? "border-ink" : "border-line"}`}>
+                  <p className="text-sm font-medium">{String(row.data.title ?? id)}</p>
                   <p className="mt-1 text-xs text-muted">{decision.label}. {decision.detail}</p>
                   <ul className="mt-3 space-y-3">
                     {row.checks.map((check) => {
@@ -599,19 +775,17 @@ function TracePanel({
     <>
       <aside className="sticky top-4 mt-8 hidden border border-line bg-surface p-4 lg:mt-0 lg:block">{body}</aside>
       <div className="lg:hidden">
-        <button
-          type="button"
-          className="fixed inset-x-4 bottom-4 z-20 border border-line bg-canvas px-4 py-3 text-left text-sm"
-          onClick={() => onOpenChange(true)}
-        >
+        <button ref={barRef} type="button" className="trace-toggle" onClick={() => onOpenChange(true)}>
           {result ? `Trace · ${summaryKicker}` : "Open trace"}
         </button>
         {open ? (
-          <div className="fixed inset-0 z-30 flex items-end bg-black/60" role="presentation" onClick={() => onOpenChange(false)}>
+          <div className="trace-overlay" role="presentation" onClick={() => onOpenChange(false)}>
             <div
+              ref={dialogRef}
               role="dialog"
+              aria-modal="true"
               aria-label="Trace"
-              className="max-h-[78vh] w-full overflow-auto border-t border-line bg-canvas p-4"
+              className="trace-sheet"
               onClick={(event) => event.stopPropagation()}
             >
               <button type="button" className="mb-4 text-sm underline" onClick={() => onOpenChange(false)}>
@@ -631,7 +805,7 @@ function OtherPolicies({ policies, table }: { policies: PolicyDef[]; table: stri
   if (others.length === 0) return null;
   return (
     <>
-      <h3 className="mt-5 text-sm font-semibold">Other tables</h3>
+      <h3 className="mt-5 text-sm font-medium">Other tables</h3>
       <ul className="mt-2 space-y-2 text-xs text-muted">
         {others.map((policy) => (
           <li key={`${policy.table}:${policy.name}`}>
