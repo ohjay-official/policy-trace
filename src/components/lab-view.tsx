@@ -615,6 +615,7 @@ function TracePanel({
       Array.from(
         dialog?.querySelectorAll<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])") ?? [],
       ).filter((el) => !el.hasAttribute("disabled"));
+    const bar = barRef.current;
     focusable()[0]?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -639,7 +640,7 @@ function TracePanel({
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
-      barRef.current?.focus();
+      bar?.focus();
     };
   }, [open, onOpenChange]);
   useEffect(() => {
