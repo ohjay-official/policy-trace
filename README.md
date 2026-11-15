@@ -27,7 +27,7 @@ On a phone, open the **Trace · Grant layer, not policy** or **Trace · Policy l
 
 [![CI](https://github.com/ohjay-official/policy-trace/actions/workflows/ci.yml/badge.svg)](https://github.com/ohjay-official/policy-trace/actions/workflows/ci.yml)
 
-The job that checks everything is `verify` in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). It runs `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:sql`, and `npm run build`. A passing `npm test` run prints `Tests  42 passed (42)` and `Test Files  6 passed (6)`. The `verify` job on `main` at commit `4232071` is green: [run 43681846432](https://github.com/ohjay-official/policy-trace/actions/runs/43681846432).
+The job that checks everything is `verify` in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). It runs `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:sql`, and `npm run build`. A passing `npm test` run prints `Tests  44 passed (44)` and `Test Files  6 passed (6)`.
 
 There is no single npm script that runs that full suite locally. `npm test` is Vitest only. `npm run test:sql` needs a local PostgreSQL server.
 
@@ -52,11 +52,10 @@ Source notes for the 2026 grant change, the tester removal, and the agent-bounda
 | Shares | A share stores a read-only snapshot. Fork opens that SQL in the lab |
 | URL state | Choosing who is asking, or a policy chip, updates `?as=` and `?chip=` |
 | Safety | Every run is a transaction that rolls back. The browser only uses the publishable key |
-| Automated checks | 42 Vitest tests, plus SQL evaluator tests, typecheck, lint, and a production build in the `verify` job |
+| Automated checks | 44 Vitest tests, plus SQL evaluator tests, typecheck, lint, and a production build in the `verify` job |
 
 | Limit | Detail |
 | --- | --- |
-| No license file | The repository does not include a `LICENSE` file |
 | No film or post yet | There is no published demo recording or X post to link here |
 | Fixed identities | You cannot sign in as yourself. Only the five seeded identities are available |
 | Whitelisted SQL | The editor rejects anything other than policy and grant statements on the current scenario's `lab_sandbox` tables |
@@ -213,7 +212,7 @@ using ((select auth.uid()) = owner_id)
 with check ((select auth.uid()) = owner_id);
 ```
 
-Alice's run marks "Login bug" **Updated**. Bob still cannot close Alice's ticket. (The evaluator's `RETURNING` payload has `status` `closed`; the result table still shows the seeded `open` value in the Fields column.)
+Alice's run marks "Login bug" **Updated**, with `status` `closed` in the Fields column. Bob still cannot close Alice's ticket.
 
 **Revoke UPDATE** leaves the `SELECT` policy in place and drops the `UPDATE` grant. The same statement stops at `42501` (`permission denied for table tickets`) before either policy can apply. That is the grant layer again.
 
@@ -362,7 +361,7 @@ Libraries and services, with versions taken from `package.json`:
 
 ## License
 
-This repository does not include a `LICENSE` file.
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
 ## Affiliation
 
