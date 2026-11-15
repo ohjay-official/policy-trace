@@ -581,6 +581,41 @@ function TracePanel({
   onOpenChange: (open: boolean) => void;
 }) {
   const barRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    const focusable = () =>
+      Array.from(
+        dialog?.querySelectorAll<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])") ?? [],
+      ).filter((el) => !el.hasAttribute("disabled"));
+    focusable()[0]?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onOpenChange(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const list = focusable();
+      if (list.length === 0) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || !dialog?.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !dialog?.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      barRef.current?.focus();
+    };
+  }, [open, onOpenChange]);
   useEffect(() => {
     const bar = barRef.current;
     if (!bar) return;
@@ -673,11 +708,13 @@ function TracePanel({
           {result ? `Trace · ${summaryKicker}` : "Open trace"}
         </button>
         {open ? (
-          <div className="fixed inset-0 z-30 flex items-end bg-black/60" role="presentation" onClick={() => onOpenChange(false)}>
+          <div className="trace-overlay" role="presentation" onClick={() => onOpenChange(false)}>
             <div
+              ref={dialogRef}
               role="dialog"
+              aria-modal="true"
               aria-label="Trace"
-              className="max-h-[78vh] w-full overflow-auto border-t border-line bg-canvas p-4"
+              className="trace-sheet"
               onClick={(event) => event.stopPropagation()}
             >
               <button type="button" className="mb-4 text-sm underline" onClick={() => onOpenChange(false)}>
