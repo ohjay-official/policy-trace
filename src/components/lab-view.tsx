@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import { Check, Copy, Minus, Share2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { STATEMENT_TIMEOUT_NOTICE, isStatementTimeout, timeoutAttempt } from "@/lib/lab-run";
 import { fieldLabel, formatField } from "@/lib/people";
 import { parsePolicyScript } from "@/lib/sql-whitelist";
 import { labSearch } from "@/lib/lab-url";
@@ -59,8 +59,6 @@ export function LabView({
   readOnly: boolean;
   initialSql?: string;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
   const queryRef = useRef(initialQuery);
   const chipSql = scenario.chips.find((chip) => chip.id === initialChip)?.sql;
   const [identity, setIdentity] = useState<IdentityId>(initialIdentity);
@@ -78,6 +76,11 @@ export function LabView({
   const sqlRef = useRef(sql);
   sqlRef.current = sql;
   const requestRef = useRef(0);
+  const retriedRef = useRef(false);
+  const retryScheduled = useRef(false);
+  const tablesKey = scenario.tables.join(",");
+  const tablesRef = useRef(scenario.tables);
+  tablesRef.current = scenario.tables;
 
   const parsed = useMemo(
     () => parsePolicyScript(sql, scenario.tables),
@@ -88,9 +91,12 @@ export function LabView({
 
   function remember(nextIdentity: IdentityId, nextChip: string | null) {
     if (readOnly) return;
+    retriedRef.current = false;
+    retryScheduled.current = false;
     const next = labSearch(queryRef.current, nextIdentity, nextChip);
     queryRef.current = next;
-    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+    const url = `${window.location.pathname}${next ? `?${next}` : ""}${window.location.hash}`;
+    window.history.replaceState(window.history.state, "", url);
   }
 
   useEffect(() => {
@@ -127,8 +133,12 @@ export function LabView({
 
   useEffect(() => {
     if (!ready) return;
+    const isRetry = retryScheduled.current;
+    retryScheduled.current = false;
+    if (!isRetry) retriedRef.current = false;
+    const tables = tablesRef.current;
     const currentSql = sqlRef.current;
-    const local = parsePolicyScript(currentSql, scenario.tables);
+    const local = parsePolicyScript(currentSql, tables);
     if (!local.ok) {
       setResult(null);
       setMessage(local.detail);
@@ -145,6 +155,7 @@ export function LabView({
       return;
     }
     const requestId = ++requestRef.current;
+    let cancelled = false;
     setRunning(true);
     setMessage(null);
     void client
@@ -154,8 +165,25 @@ export function LabView({
         p_identity: identity,
       })
       .then(({ data, error }) => {
-        if (requestId !== requestRef.current) return;
+        if (cancelled || requestId !== requestRef.current) return;
+        const failure = isLabFailure(data) ? data : null;
+        const timedOut = isStatementTimeout({
+          message: error?.message ?? failure?.detail,
+          code: (error as { code?: string } | null)?.code,
+          sqlstate: failure?.sqlstate,
+        });
+        if (timedOut && timeoutAttempt(retriedRef.current) === "retry") {
+          retriedRef.current = true;
+          retryScheduled.current = true;
+          setGeneration((value) => value + 1);
+          return;
+        }
         setRunning(false);
+        if (timedOut) {
+          setResult(null);
+          setMessage(STATEMENT_TIMEOUT_NOTICE);
+          return;
+        }
         if (error) {
           setResult(null);
           const missing = /function .* does not exist|PGRST202|schema cache/i.test(error.message);
@@ -171,17 +199,22 @@ export function LabView({
           setMessage(null);
           return;
         }
-        if (isLabFailure(data)) {
+        if (failure) {
           setResult(null);
-          setMessage(data.detail);
+          setMessage(failure.detail);
           return;
         }
         setResult(null);
         setMessage("The evaluator returned an unexpected payload.");
       });
-  }, [ready, generation, identity, scenario.slug, scenario.tables]);
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, generation, identity, scenario.slug, tablesKey]);
 
   function runNow() {
+    retriedRef.current = false;
+    retryScheduled.current = false;
     setGeneration((value) => value + 1);
   }
 
@@ -349,7 +382,18 @@ export function LabView({
                 />
               )}
             </div>
-            {message ? <p className="mt-3 text-sm text-danger">{message}</p> : null}
+            {message ? (
+              <div className="notice warn" role="alert" style={{ marginTop: 12 }}>
+                <p>{message}</p>
+                {message === STATEMENT_TIMEOUT_NOTICE ? (
+                  <p style={{ marginTop: 12 }}>
+                    <button type="button" className="btn btn-small" onClick={runNow}>
+                      Run again
+                    </button>
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </section>
 
           <section className="mt-8" aria-labelledby="editor-heading">
