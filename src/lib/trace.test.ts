@@ -99,6 +99,23 @@ describe("formatTrace", () => {
     expect(summary.detail).toContain("secret key");
   });
 
+  it("explains a silent update run as service_role", () => {
+    const summary = formatTrace(
+      success({
+        scenario: "silent-update",
+        operation: "update",
+        rowsAffected: 0,
+        returned: [],
+        identity: { id: "service_role", role: "service_role", sub: null, bypassesRls: true },
+      }),
+    );
+    expect(summary.headline).toBe("UPDATE changed 0 rows");
+    expect(summary.detail).toContain("bypasses row level security");
+    expect(summary.detail).toContain("auth.uid()");
+    expect(summary.detail).toContain("null for service_role");
+    expect(summary.detail).toContain("0 rows match");
+  });
+
   it("explains an update that changes nothing", () => {
     const summary = formatTrace(
       success({
