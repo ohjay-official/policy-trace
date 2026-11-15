@@ -488,7 +488,47 @@ dl.brief dd { margin: 0; color: var(--fg-soft); }
 .lab .lg\:grid > * { min-width: 0; }
 .lab h3 { font-size: 18px; font-weight: 400; }
 .lab .page-head { padding-top: clamp(28px, 4vw, 56px); }
-@media (min-width: 1024px) { .lab { padding-bottom: 0 !important; } }
+
+:root { --trace-bar-height: 52px; }
+.trace-toggle {
+  position: fixed;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin: 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  border: 0;
+  border-top: 1px solid var(--rule-2);
+  background: var(--shade);
+  color: var(--fg);
+  font: 500 14.5px var(--sans);
+  letter-spacing: -0.008em;
+  text-align: left;
+  cursor: pointer;
+}
+@media (max-width: 1023px) {
+  body:has(.trace-toggle) {
+    box-sizing: border-box;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: calc(var(--trace-bar-height) + env(safe-area-inset-bottom, 0px));
+  }
+  body:has(.trace-toggle) .site-header { position: relative; flex: none; }
+  body:has(.trace-toggle) .page-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    scroll-padding-bottom: calc(var(--trace-bar-height) + env(safe-area-inset-bottom, 0px));
+  }
+  body:has(.trace-toggle) .lab :is(h1, h2, h3, section, fieldset) {
+    scroll-margin-bottom: calc(var(--trace-bar-height) + env(safe-area-inset-bottom, 0px));
+  }
+}
 textarea.mono { font: 400 14px/1.55 var(--mono); }
 
 /* Short screens: keep the last fact row inside the stage. */

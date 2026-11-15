@@ -50,10 +50,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Nav />
           </div>
         </header>
-        <main id="main" className="wrap">
-          {children}
-        </main>
-        <footer className="site-footer">
+        <div className="page-scroll">
+          <main id="main" className="wrap">
+            {children}
+          </main>
+          <footer className="site-footer">
           <div className="wrap">
             <div className="foot-top">
               <Link href="/" className="brand">
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </p>
           </div>
         </footer>
+        </div>
       </body>
     </html>
   );

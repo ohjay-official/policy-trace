@@ -215,7 +215,7 @@ export function LabView({
   const sub = IDENTITY_SUB[identity];
 
   return (
-    <div className="lab" style={{ paddingBottom: 96 }}>
+    <div className="lab">
       <div className="page-head" style={{ paddingBottom: 0 }}>
         <h1>{scenario.title}</h1>
         <p>{scenario.summary}</p>
@@ -533,6 +533,35 @@ function TracePanel({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const barRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const query = window.matchMedia("(max-width: 1023px)");
+    const apply = () => {
+      if (!query.matches) {
+        document.documentElement.style.removeProperty("--trace-bar-height");
+        return;
+      }
+      const probe = document.createElement("div");
+      probe.style.cssText = "position:fixed;padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;";
+      document.body.appendChild(probe);
+      const safe = Number.parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+      probe.remove();
+      const face = Math.max(44, Math.round(bar.offsetHeight - safe));
+      document.documentElement.style.setProperty("--trace-bar-height", `${face}px`);
+    };
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(bar);
+    query.addEventListener("change", apply);
+    return () => {
+      observer.disconnect();
+      query.removeEventListener("change", apply);
+      document.documentElement.style.removeProperty("--trace-bar-height");
+    };
+  }, [summaryKicker, result]);
+
   const body = (
     <div>
       <h2 className="text-lg font-medium">Trace</h2>
@@ -592,11 +621,7 @@ function TracePanel({
     <>
       <aside className="sticky top-4 mt-8 hidden border border-line bg-surface p-4 lg:mt-0 lg:block">{body}</aside>
       <div className="lg:hidden">
-        <button
-          type="button"
-          className="fixed inset-x-4 bottom-4 z-20 border border-line bg-canvas px-4 py-3 text-left text-sm"
-          onClick={() => onOpenChange(true)}
-        >
+        <button ref={barRef} type="button" className="trace-toggle" onClick={() => onOpenChange(true)}>
           {result ? `Trace · ${summaryKicker}` : "Open trace"}
         </button>
         {open ? (
