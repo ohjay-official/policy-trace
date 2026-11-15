@@ -249,3 +249,10 @@ function commandLabel(command: PolicyCommand): string {
 export function returnedIds(result: LabSuccess): Set<string> {
   return new Set(result.returned.map((row) => String(row.id)));
 }
+
+/** Fields to show in the result grid. Updated rows use RETURNING values over the pre-update snapshot. */
+export function displayRowData(row: TraceRow, result: LabSuccess): Record<string, unknown> {
+  const returned = result.returned.find((item) => String(item.id) === String(row.data.id));
+  if (!returned) return row.data;
+  return { ...row.data, ...returned };
+}
