@@ -13,6 +13,7 @@ import { SCENARIOS, type Scenario } from "@/lib/scenarios";
 import {
   describeCheck,
   describeRow,
+  displayRowData,
   formatTrace,
   identityLabel,
   returnedIds,
@@ -529,7 +530,7 @@ function RowList({
   const rows = result
     ? result.rows.map((row) => ({
         id: String(row.data.id),
-        data: row.data,
+        data: displayRowData(row, result),
         decision: describeRow(row, result).label,
       }))
     : scenario.rows.map((row) => ({

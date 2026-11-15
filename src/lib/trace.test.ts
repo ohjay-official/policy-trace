@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ALICE_ID, BOB_ID } from "@/lib/people";
-import { describeCheck, describeRow, formatTrace } from "@/lib/trace";
+import { describeCheck, describeRow, displayRowData, formatTrace } from "@/lib/trace";
 import type { LabSuccess, PolicyDef } from "@/lib/types";
 
 const ownerPolicy: PolicyDef = {
@@ -177,3 +177,50 @@ describe("describeCheck", () => {
     expect(lines.join(" ")).toContain("grant check failed first");
   });
 });
+
+describe("displayRowData", () => {
+  it("shows RETURNING values on an updated row, not the pre-update snapshot", () => {
+    const result = success({
+      operation: "update",
+      rowsAffected: 1,
+      returned: [{ id: "1", title: "Login bug", owner_id: ALICE_ID, status: "closed" }],
+      rows: [
+        {
+          data: { id: "1", title: "Login bug", owner_id: ALICE_ID, status: "open" },
+          queryPredicate: true,
+          checks: [],
+        },
+        {
+          data: { id: "2", title: "Billing question", owner_id: BOB_ID, status: "open" },
+          queryPredicate: false,
+          checks: [],
+        },
+      ],
+    });
+    expect(describeRow(result.rows[0], result).label).toBe("Updated");
+    expect(displayRowData(result.rows[0], result)).toEqual({
+      id: "1",
+      title: "Login bug",
+      owner_id: ALICE_ID,
+      status: "closed",
+    });
+    expect(displayRowData(result.rows[1], result).status).toBe("open");
+  });
+
+  it("keeps the snapshot when the row is not in RETURNING", () => {
+    const result = success({
+      operation: "update",
+      rowsAffected: 0,
+      returned: [],
+      rows: [
+        {
+          data: { id: "1", title: "Login bug", owner_id: ALICE_ID, status: "open" },
+          queryPredicate: true,
+          checks: [],
+        },
+      ],
+    });
+    expect(displayRowData(result.rows[0], result)).toEqual(result.rows[0].data);
+  });
+});
+
