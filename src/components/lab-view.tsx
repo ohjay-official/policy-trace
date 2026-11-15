@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { fieldLabel, formatField } from "@/lib/people";
 import { parsePolicyScript } from "@/lib/sql-whitelist";
 import { getSupabase, supabaseConfig } from "@/lib/supabase";
-import type { Scenario } from "@/lib/scenarios";
+import { SCENARIOS, type Scenario } from "@/lib/scenarios";
 import {
   describeCheck,
   describeRow,
@@ -220,6 +220,21 @@ export function LabView({
       <div className="page-head" style={{ paddingBottom: 0 }}>
         <h1>{scenario.title}</h1>
         <p>{scenario.summary}</p>
+        <nav className="chip-row" aria-label="Scenarios">
+          {SCENARIOS.map((item) => {
+            const current = item.slug === scenario.slug;
+            return (
+              <Link
+                key={item.slug}
+                href={`/lab/${item.slug}`}
+                className={`btn btn-small ${current ? "" : "btn-quiet"}`}
+                aria-current={current ? "page" : undefined}
+              >
+                {item.title}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8" style={{ marginTop: 28 }}>

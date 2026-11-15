@@ -1,8 +1,17 @@
 import Link from "next/link";
-import { Database, Eye, RotateCcw, ShieldCheck, SquareStack } from "lucide-react";
+import { Bot, Database, Eye, KeyRound, PencilLine, RotateCcw, ShieldCheck, SquareStack, Users } from "lucide-react";
 import { Faq } from "@/components/faq";
 import { Reveal } from "@/components/reveal";
 import { Stage } from "@/components/stage";
+import { SCENARIOS } from "@/lib/scenarios";
+
+const scenarioIcons = {
+  "missing-grant": KeyRound,
+  "agent-as-alice": Bot,
+  "using-true": Eye,
+  "silent-update": PencilLine,
+  "team-notes": Users,
+} as const;
 
 const tutorial = "https://github.com/ohjay-official/policy-trace#tutorial";
 
@@ -10,6 +19,28 @@ export default function HomePage() {
   return (
     <>
       <Stage />
+      <Reveal className="section" aria-labelledby="scenarios-title">
+        <div className="section-head">
+          <h2 id="scenarios-title">Five labs</h2>
+          <p>Each one is a real seeded query. Open it, switch who is asking, and read the trace.</p>
+        </div>
+        <div className="glow-cards stagger">
+          {SCENARIOS.map((scenario) => {
+            const Icon = scenarioIcons[scenario.slug as keyof typeof scenarioIcons] ?? KeyRound;
+            return (
+              <Link key={scenario.slug} href={`/lab/${scenario.slug}`} className="glow-card">
+                <span className="gc-index">
+                  <span className="icon-badge">
+                    <Icon aria-hidden="true" />
+                  </span>
+                  {scenario.title}
+                </span>
+                <p>{scenario.summary}</p>
+              </Link>
+            );
+          })}
+        </div>
+      </Reveal>
       <Reveal className="runs-on" aria-labelledby="stack-title">
         <h2 id="stack-title" className="visually-hidden">
           What it runs on

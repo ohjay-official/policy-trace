@@ -381,10 +381,13 @@ export function Stage() {
     const span = el.offsetHeight - window.innerHeight;
     window.scrollTo({ top: top + span * ((i + (i ? 0.22 : 0)) / UNITS), behavior: "smooth" });
   };
-  const travel = () => (current < LAST ? goTo(current + 1) : router.push("/lab/missing-grant"));
-
   const s = STATES[current];
-  const nextTitle = current < LAST ? STATES[current + 1].title : "The lab";
+  const labHref = s.intro ? null : `/lab/${s.key}`;
+  const travel = () => {
+    if (labHref) router.push(labHref);
+    else goTo(1);
+  };
+  const nextTitle = current < LAST ? STATES[current + 1].title : s.title;
 
   return (
     <section className="ph" ref={sec} aria-label="How Policy Trace works" id="how">
@@ -418,11 +421,11 @@ export function Stage() {
               ref={portal}
               type="button"
               onClick={travel}
-              aria-label={current < LAST ? `Go to ${nextTitle}` : "Open the lab"}
+              aria-label={labHref ? `Open the ${s.title} lab` : `Go to ${nextTitle}`}
             />
             <p className="ph-hint">
-              <span className="mouse">{current < LAST ? "Scroll, or click the window" : "Click the window to open the lab"}</span>
-              <span className="touch">{current < LAST ? "Scroll, or tap the window" : "Tap the window to open the lab"}</span>
+              <span className="mouse">{labHref ? "Scroll for the next stage, or open this lab" : "Scroll, or click the window"}</span>
+              <span className="touch">{labHref ? "Scroll for the next stage, or open this lab" : "Scroll, or tap the window"}</span>
             </p>
           </div>
           <div className="ph-content" key={`c${current}`}>
@@ -445,14 +448,21 @@ export function Stage() {
                 </div>
               </div>
             ) : (
-              <dl className="ph-facts" ref={(node) => { sideRef.current = node; }}>
-                {s.facts?.map(([k, v], i) => (
-                  <div className="ph-fact" key={k} style={{ ["--i" as string]: i }}>
-                    <dt>{k}</dt>
-                    <dd>{v}</dd>
-                  </div>
-                ))}
-              </dl>
+              <div className="ph-side" ref={(node) => { sideRef.current = node; }}>
+                <dl className="ph-facts">
+                  {s.facts?.map(([k, v], i) => (
+                    <div className="ph-fact" key={k} style={{ ["--i" as string]: i }}>
+                      <dt>{k}</dt>
+                      <dd>{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+                {labHref ? (
+                  <p className="ph-open">
+                    <Link href={labHref}>Open this lab</Link>
+                  </p>
+                ) : null}
+              </div>
             )}
           </div>
         </div>
