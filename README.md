@@ -2,33 +2,70 @@
 
 A lab that shows whether a Postgres row was stopped by a grant or filtered by a policy.
 
-Live site: [https://policy-trace-gray.vercel.app](https://policy-trace-gray.vercel.app)
+![The Policy Trace home page, with the scenario window and the Open the lab button](docs/design/screens/home-1280.png)
+
+For reviewers: open [/lab/missing-grant](https://policy-trace-gray.vercel.app/lab/missing-grant) as Alice, which is the default. No signup.
 
 Policy Trace is an independent community project. It is not a Supabase product and it is not affiliated with Supabase Inc.
 
-## For reviewers
+## Quick links
 
-The shortest path through the headline case is on the live site, as Alice, which is the default identity.
+- Live demo: [https://policy-trace-gray.vercel.app](https://policy-trace-gray.vercel.app)
+- Repository: [https://github.com/ohjay-official/policy-trace](https://github.com/ohjay-official/policy-trace)
 
-1. Open [https://policy-trace-gray.vercel.app/lab/missing-grant](https://policy-trace-gray.vercel.app/lab/missing-grant). The first chip, **Missing grant**, has the owner policy and no `SELECT` grant. The grid becomes a `42501` card. The trace kicker is "Grant layer, not policy." Postgres raised `permission denied for table documents` and did not apply the policies, even though the owner policy would have allowed Alice's row.
-2. Switch the chip to **Silent empty select**. That adds `GRANT SELECT` and leaves row level security on, with no `SELECT` policy. The query succeeds. The headline is "0 rows returned." The trace kicker is "Policy layer," and the detail is "An empty result is not a 42501."
-3. Compare the two results in the trace drawer. The first case is a grant refusal. The second is a silent empty read. They look similar in an app that only checks whether any rows came back. They are not the same failure.
+## Try it in 30 seconds
 
-The third chip, **Grant and owner policy**, is the repaired version. Alice sees "Q4 plan." Bob's "Hiring notes" stay hidden, and the trace on that row says `USING` did not match.
+The lab needs no account. These steps quote the copy on the live site.
 
-## What it is and why
+1. Open [https://policy-trace-gray.vercel.app/lab/missing-grant](https://policy-trace-gray.vercel.app/lab/missing-grant). Under **Who is running the query**, **Alice** is selected. The **Missing grant** chip is selected. The result kicker is **Grant layer, not policy**. The card shows **42501** and **permission denied for table documents**, with this detail: "The SELECT grant is missing for authenticated. Postgres raised 42501 and did not run the policies. This is the grant layer, not the policy layer."
+2. Switch the chip to **Silent empty select**. The kicker becomes **Policy layer**. The result table lists **Q4 plan** and **Hiring notes** as **Filtered**. The trace says: "The query succeeded and raised no error. Row level security filtered every row. An empty result is not a 42501."
+3. Switch the chip to **Grant and owner policy**. **Q4 plan** is marked **Returned**. **Hiring notes** is marked **Filtered**. The trace on that hidden row says `USING did not match: ((select auth.uid()) = owner_id)`.
 
-Postgres applies two checks before the Data API returns a row: the table grant, then the row level security policy. Those layers fail in different ways.
+On a phone, open the **Trace · Grant layer, not policy** or **Trace · Policy layer** bar to read the same copy. The two failures look similar in an app that only checks whether any rows came back. They are not the same failure.
 
-In 2026, Supabase stopped exposing new `public` tables to the Data API automatically. New tables need an explicit `GRANT` before PostgREST can see them. A missing grant now returns Postgres `42501` ("permission denied") instead of a quiet empty result. The official changelog was [published on 28 April 2026](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically). The stated timeline was opt-in at project creation from that date, the default for new projects from 30 May 2026, and enforcement on existing projects on 30 October 2026. The changelog is explicit that RLS did not change: grants decide whether a role can reach the table at all, and policies decide which rows that role can see.
+## Check that it works
 
-A missing `SELECT` policy is still silent. The query succeeds, the grant has already passed, and the result is an empty array with no error. Official RLS docs have taught that distinction for some time. After the default-grant change, the two failures are easier to mix up, because both can look like "the app returned nothing."
+[![CI](https://github.com/ohjay-official/policy-trace/actions/workflows/ci.yml/badge.svg)](https://github.com/ohjay-official/policy-trace/actions/workflows/ci.yml)
 
-Supabase also piloted an official RLS Tester preview in the dashboard, [announced on 24 April 2026](https://supabase.com/changelog/45233-feature-preview-rls-tester). It could impersonate a role, run a `SELECT`, and show which policies were evaluated. On 13 July 2026, [PR 47866](https://github.com/supabase/supabase/pull/47866) removed the preview. The PR says they were "pausing the development of the RLS Tester feature preview while we re-evaluate its direction." The official docs remain thorough, but that interactive tester is not in the dashboard today.
+The job that checks everything is `verify` in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). It runs `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:sql`, and `npm run build`. A passing `npm test` run prints `Tests  42 passed (42)` and `Test Files  6 passed (6)`. The `verify` job on `main` at commit `4232071` is green: [run 43681846432](https://github.com/ohjay-official/policy-trace/actions/runs/43681846432).
 
-This lab is a public, shareable place to watch both layers on a real Supabase project, as `anon`, Alice, Bob, an agent signed in as Alice, or `service_role`. It does not claim to replace Studio, Advisors, or the official docs. Source notes for the 2026 grant change, the tester removal, and the agent-boundary framing are in [`docs/research/07-verification.md`](docs/research/07-verification.md) and [`docs/research/03-supabase-priorities.md`](docs/research/03-supabase-priorities.md).
+There is no single npm script that runs that full suite locally. `npm test` is Vitest only. `npm run test:sql` needs a local PostgreSQL server.
+
+## What's new here
+
+Supabase piloted an official RLS Tester preview in the dashboard. It could impersonate a role, run a `SELECT`, and show which policies were evaluated. On 13 July 2026, [supabase/supabase PR 47866](https://github.com/supabase/supabase/pull/47866) removed that preview. The PR says they were "pausing the development of the RLS Tester feature preview while we re-evaluate its direction." Official docs still explain that grants and policies fail in different ways. This lab does not claim to be the only place those layers can be inspected, and it does not replace Studio, Advisors, or the docs.
+
+What changed in 2026 is that a missing grant is louder. Supabase stopped exposing new `public` tables to the Data API automatically. A missing `GRANT` now returns Postgres `42501` ("permission denied") instead of a quiet empty result. The official changelog was [published on 28 April 2026](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically). The stated timeline was opt-in at project creation from that date, the default for new projects from 30 May 2026, and enforcement on existing projects on 30 October 2026. The changelog is explicit that RLS did not change: grants decide whether a role can reach the table at all, and policies decide which rows that role can see.
+
+A missing `SELECT` policy is still silent. The query succeeds, the grant has already passed, and the result is an empty array with no error. After the default-grant change, the two failures are easier to mix up, because both can look like "the app returned nothing." This lab is a public, shareable place to watch both layers on a real Supabase project, as `anon`, Alice, Bob, an agent signed in as Alice, or `service_role`.
+
+Source notes for the 2026 grant change, the tester removal, and the agent-boundary framing are in [`docs/research/07-verification.md`](docs/research/07-verification.md) and [`docs/research/03-supabase-priorities.md`](docs/research/03-supabase-priorities.md).
+
+## What works today
+
+| Area | Status |
+| --- | --- |
+| Five seeded labs | Live at [policy-trace-gray.vercel.app](https://policy-trace-gray.vercel.app), with no signup |
+| Identities | `anon`, Alice, Bob, Agent as Alice, and `service_role` |
+| Trace | Names the grant layer, the policy layer, or an RLS bypass, and shows per-row `USING` / `WITH CHECK` checks |
+| Editor | Accepts only policy and grant statements on `lab_sandbox` tables. **Run**, **Copy SQL**, and **Share** are on the lab page |
+| Shares | A share stores a read-only snapshot. Fork opens that SQL in the lab |
+| URL state | Choosing who is asking, or a policy chip, updates `?as=` and `?chip=` |
+| Safety | Every run is a transaction that rolls back. The browser only uses the publishable key |
+| Automated checks | 42 Vitest tests, plus SQL evaluator tests, typecheck, lint, and a production build in the `verify` job |
+
+| Limit | Detail |
+| --- | --- |
+| No license file | The repository does not include a `LICENSE` file |
+| No film or post yet | There is no published demo recording or X post to link here |
+| Fixed identities | You cannot sign in as yourself. Only the five seeded identities are available |
+| Whitelisted SQL | The editor rejects anything other than policy and grant statements on the current scenario's `lab_sandbox` tables |
+| Timeouts | A statement timeout (Postgres `57014`) is retried once, then the site shows "The database took too long to answer. Run it again." with a **Run again** button |
 
 ## Tutorial
+
+<details>
+<summary>Walk through the five scenarios, with the SQL and the trace copy</summary>
 
 Every run is a transaction that rolls back. Edits you type are not saved unless you create a share snapshot.
 
@@ -42,7 +79,7 @@ The identities are fixed:
 | Agent as Alice | `authenticated` | Alice's id, with `app_metadata.agent = true` |
 | service_role | `service_role` | null, and the role bypasses row level security |
 
-`service_role` is on the switch so the bypass is visible. The screen shows a warning: "service_role bypasses row level security." The browser only ever uses the publishable key. There is no field for a secret key.
+`service_role` is on the switch so the bypass is visible. When that identity is selected, the screen shows: "service_role bypasses row level security. Policies do not run for this role. A secret key in a browser can read every row the grants allow. This lab never asks for that key." The browser only ever uses the publishable key. There is no field for a secret key.
 
 ### 1. Missing grant
 
@@ -59,7 +96,7 @@ to authenticated
 using ((select auth.uid()) = owner_id);
 ```
 
-The trace kicker is "Grant layer, not policy." The headline is "42501 permission denied." The detail is that the `SELECT` grant is missing for `authenticated`, so Postgres did not run the policies. The per-row trace is still drawn: Alice's "Q4 plan" would have matched `USING`, and Bob's "Hiring notes" would not have, but that does not matter until the grant exists.
+The result kicker is **Grant layer, not policy**. The card shows **42501** and **permission denied for table documents**. The detail is that the `SELECT` grant is missing for `authenticated`, so Postgres did not run the policies. The per-row trace is still drawn: Alice's "Q4 plan" shows `USING matched`, and Bob's "Hiring notes" shows `USING did not match`, with the note that the grant check failed first.
 
 **Silent empty select** is the other half of the comparison:
 
@@ -69,9 +106,9 @@ alter table lab_sandbox.documents enable row level security;
 grant select on lab_sandbox.documents to authenticated;
 ```
 
-`sqlstate` is null. The query succeeds and returns no rows. The headline is "0 rows returned." The detail is "The query succeeded and raised no error. Row level security filtered every row. An empty result is not a 42501." There are no policies, so the per-row checks are empty.
+`sqlstate` is null. The query succeeds and returns no rows. The kicker is **Policy layer**. The result table lists both rows as **Filtered**. The trace detail is "The query succeeded and raised no error. Row level security filtered every row. An empty result is not a 42501." There are no policies, so the per-row policy checks are empty.
 
-**Grant and owner policy** adds both layers. Alice gets "Q4 plan" only. The hidden row's trace says `USING` did not match.
+**Grant and owner policy** adds both layers. Alice gets "Q4 plan" only, marked **Returned**. The hidden row, "Hiring notes," is marked **Filtered**, and its trace says `USING did not match`.
 
 ### 2. Agent as Alice
 
@@ -92,13 +129,13 @@ to authenticated
 using ((select auth.uid()) = owner_id);
 ```
 
-As Agent as Alice, two of Alice's tasks come back ("Ship the grant fix" and "Record the demo"). Bob's "Review the hiring notes" stays hidden, and its trace says `USING` did not match.
+As Agent as Alice, "Ship the grant fix" and "Record the demo" are marked **Returned**. Bob's "Review the hiring notes" is marked **Filtered**, and its trace says `USING did not match`.
 
 **Add USING (true)** places a second permissive policy next to the owner policy. Permissive policies combine with `OR`, so the agent can now read every task, including Bob's.
 
 ### 3. USING (true)
 
-Open `/lab/using-true` as Alice. Invoices carry a `secret`. The owner policy alone keeps Bob's invoice away from Alice. Alice sees "Studio invoice" and not "Retreat invoice."
+Open `/lab/using-true` as Alice. Invoices carry a `secret`. The owner policy alone keeps Bob's invoice away from Alice. "Studio invoice" is marked **Returned**. "Retreat invoice" is marked **Filtered**.
 
 **Add USING (true)** leaves the owner policy in place and adds a policy that matches every row:
 
@@ -122,7 +159,7 @@ to authenticated
 using (true);
 ```
 
-Alice then sees both invoices, including Bob's secret (`visa 4000`). The trace on Bob's row shows the owner policy's `USING` as false and the `USING (true)` policy as true. One permissive `USING (true)` is enough to leak the row.
+Both invoices are then marked **Returned**, including Bob's secret (`visa 4000`). The trace on Bob's row shows the owner policy's `USING` as false and the `USING (true)` policy as true. One permissive `USING (true)` is enough to leak the row.
 
 ### 4. Silent update
 
@@ -151,7 +188,7 @@ using ((select auth.uid()) = owner_id)
 with check ((select auth.uid()) = owner_id);
 ```
 
-The statement raises no error. `rowsAffected` is 0, and `RETURNING` is empty. The trace kicker is "Policy layer." The headline is "UPDATE changed 0 rows." The detail is that an `UPDATE` has to read the existing row, and without a `SELECT` policy that row is not visible, so the update matches nothing. On Alice's "Login bug," `USING` and `WITH CHECK` both evaluate true. On Bob's "Billing question," both are false. The policy for the write is not enough by itself.
+The statement raises no error. `rowsAffected` is 0, and `RETURNING` is empty. The kicker is **Policy layer**. The trace detail is: "The statement raised no error. An UPDATE has to read the existing row, and without a SELECT policy that row is not visible, so the update matches nothing." On Alice's "Login bug," the row is marked **Filtered**, and `USING` and `WITH CHECK` both evaluate true. On Bob's "Billing question," the row is marked **Outside the query**, and both checks are false. The policy for the write is not enough by itself.
 
 **Add a SELECT policy** is the repair:
 
@@ -176,7 +213,7 @@ using ((select auth.uid()) = owner_id)
 with check ((select auth.uid()) = owner_id);
 ```
 
-Alice's run returns one row, "Login bug," with `status` set to `closed`. The headline is "UPDATE changed 1 row." Bob still cannot close Alice's ticket.
+Alice's run marks "Login bug" **Updated**. Bob still cannot close Alice's ticket. (The evaluator's `RETURNING` payload has `status` `closed`; the result table still shows the seeded `open` value in the Fields column.)
 
 **Revoke UPDATE** leaves the `SELECT` policy in place and drops the `UPDATE` grant. The same statement stops at `42501` (`permission denied for table tickets`) before either policy can apply. That is the grant layer again.
 
@@ -213,13 +250,18 @@ using (
 );
 ```
 
-Alice sees her private "Grocery list," her Acme "Sprint plan," and Bob's Acme "Launch checklist." She does not see Bob's private "1:1 notes" or Carol's "Roadmap" on the other team. As Bob, the visible set is "Sprint plan," "1:1 notes," and "Launch checklist."
+Alice gets **Returned** on her private "Grocery list," her Acme "Sprint plan," and Bob's Acme "Launch checklist." Bob's private "1:1 notes" and Carol's "Roadmap" on the other team are marked **Filtered**. As Bob, the **Returned** set is "Sprint plan," "1:1 notes," and "Launch checklist."
 
 **Owner only** drops the team check, so Alice no longer sees Bob's Acme note. **USING (true)** on the notes policy exposes Carol's roadmap.
 
 Copy SQL when the editor shows the version you want to keep. Share writes a read-only snapshot. Fork opens that SQL in the lab.
 
+</details>
+
 ## How the evaluator stays safe
+
+<details>
+<summary>SECURITY DEFINER run_lab, the statement whitelist, rollback, and no service_role key on the client</summary>
 
 `public.run_lab` is a `SECURITY DEFINER` function. The site calls it with the publishable key. It does not execute the text from the editor as written, and the client never receives a `service_role` key.
 
@@ -234,7 +276,12 @@ Copy SQL when the editor shows the version you want to keep. Share writes a read
 
 The evaluator also has to satisfy pg-safeupdate, which PostgREST loads on the Data API. An `UPDATE` used to copy ticket status into a trace table needed a `WHERE` clause (`WHERE true`). That patch is `supabase/migrations/20261112120300_safeupdate_where.sql`.
 
+</details>
+
 ## Run it locally
+
+<details>
+<summary>Environment, migrations, and the commands in package.json</summary>
 
 The app is Next.js 15 on the App Router, with Tailwind and the Supabase JS client.
 
@@ -283,7 +330,39 @@ npm run build
 npm run test:sql
 ```
 
-`npm test` is Vitest, and it covers the browser copy of the whitelist and the trace wording. `npm run test:sql` needs a local PostgreSQL server. It creates and drops a database named `policy_trace_test`, applies the four migrations twice as a non-superuser role that resembles hosted `postgres`, then runs `supabase/tests/prelude.sql` and `supabase/tests/evaluator.sql` against that local database only. Set `DATABASE_URL` to an admin database, or rely on local peer auth for the `postgres` user.
+`npm test` is Vitest, and it covers the browser copy of the whitelist, the trace wording, share-load errors, lab URL state, FAQ accordion behavior, and statement-timeout handling. `npm run test:sql` needs a local PostgreSQL server. It creates and drops a database named `policy_trace_test`, applies the four migrations twice as a non-superuser role that resembles hosted `postgres`, then runs `supabase/tests/prelude.sql` and `supabase/tests/evaluator.sql` against that local database only. Set `DATABASE_URL` to an admin database, or rely on local peer auth for the `postgres` user.
+
+</details>
+
+## How it was built
+
+The first commit is [7f4880b](https://github.com/ohjay-official/policy-trace/commit/7f4880b28ac3d04147e797fe228056f6dfb38866), "docs: research pack, brief and spec," on 12 November 2026 at 16:07 Africa/Lagos (WAT, UTC+1).
+
+The code was written with AI via Cursor cloud agents.
+
+Libraries and services, with versions taken from `package.json`:
+
+| Library or service | Version |
+| --- | --- |
+| next | ^15.5.6 |
+| react, react-dom | ^19.2.0 |
+| @supabase/supabase-js | ^2.81.1 |
+| lucide-react | ^1.73.0 |
+| @fontsource/inter | ^5.3.0 |
+| @fontsource/manrope | ^5.3.0 |
+| @fontsource/source-code-pro | ^5.3.1 |
+| tailwindcss | ^4.1.16 |
+| typescript | ^5.9.3 |
+| vitest | ^3.2.4 |
+| eslint | ^9.39.1 |
+| eslint-config-next | ^15.5.6 |
+| Hosted database | Supabase Postgres |
+| Hosting | Vercel |
+| CI | GitHub Actions (`verify` job, postgres:17) |
+
+## License
+
+This repository does not include a `LICENSE` file.
 
 ## Affiliation
 
