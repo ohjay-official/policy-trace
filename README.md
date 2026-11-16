@@ -17,7 +17,7 @@ Policy Trace is an independent community project. It is not a Supabase product a
 
 The live lab at [https://policy-trace-gray.vercel.app/lab/missing-grant](https://policy-trace-gray.vercel.app/lab/missing-grant). No signup and no account. These steps use the copy on the live site.
 
-1. **Open the link.** Under **Who is running the query**, **Alice** is selected. The **Missing grant** chip is selected. The result kicker is **Grant layer, not policy**. The card shows **42501** and **permission denied for table documents**, with this detail: "The SELECT grant is missing for authenticated. Postgres raised 42501 and did not run the policies. This is the grant layer, not the policy layer."
+1. **Open the link.** Under **Who is running the query**, **Alice** is selected. The **Missing grant** chip is selected. The result kicker is **Grant layer, not policy**. The card shows **42501** and **permission denied for table documents**, with this detail: "The SELECT grant is missing for authenticated. Postgres raised 42501 and did not run the policies."
 2. **Switch the chip to Silent empty select.** The kicker becomes **Policy layer**. The result table lists **Q4 plan** and **Hiring notes** as **Filtered**. The trace says: "The query succeeded and raised no error. Row level security filtered every row. An empty result is not a 42501."
 3. **Switch the chip to Grant and owner policy.** **Q4 plan** is marked **Returned**. **Hiring notes** is marked **Filtered**. The trace on that hidden row says `USING did not match: ((select auth.uid()) = owner_id)`.
 

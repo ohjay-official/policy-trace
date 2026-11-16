@@ -67,7 +67,10 @@ describe("formatTrace", () => {
     expect(summary.layer).toBe("grant");
     expect(summary.kicker).toBe("Grant layer, not policy");
     expect(summary.headline).toContain("42501");
-    expect(summary.detail).toContain("did not run the policies");
+    expect(summary.detail).toBe(
+      "The SELECT grant is missing for authenticated. Postgres raised 42501 and did not run the policies.",
+    );
+    expect(summary.detail).not.toContain("This is the grant layer, not the policy layer.");
   });
 
   it("labels a successful empty select as the policy layer", () => {
