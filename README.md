@@ -10,6 +10,7 @@ Policy Trace is an independent community project. It is not a Supabase product a
 
 - **Try it, no signup:** [https://policy-trace-gray.vercel.app/lab/missing-grant](https://policy-trace-gray.vercel.app/lab/missing-grant) ([steps](#try-it))
 - **Live site:** [https://policy-trace-gray.vercel.app](https://policy-trace-gray.vercel.app)
+- **Launch post on X:** [https://x.com/Oh_Jay0/status/2122239660877377826](https://x.com/Oh_Jay0/status/2122239660877377826)
 - **Walk through all five labs:** [Tutorial](#tutorial)
 - **Check the tests:** `npm test` ([More ways to test](#more-ways-to-test))
 
@@ -62,7 +63,6 @@ Source notes are in [`docs/research/07-verification.md`](docs/research/07-verifi
 
 | Limit | Detail |
 | --- | --- |
-| No film or post yet | There is no published demo recording or X post to link here |
 | Fixed identities | You cannot sign in as yourself. Only the five seeded identities are available |
 | Whitelisted SQL | The editor rejects anything other than policy and grant statements on the current scenario's `lab_sandbox` tables |
 | Timeouts | A statement timeout (Postgres `57014`) is retried once, then the site shows "The database took too long to answer. Run it again." with a **Run again** button |
