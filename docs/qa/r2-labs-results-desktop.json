@@ -1,0 +1,1790 @@
+{
+  "desktop": {
+    "rows": [
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Missing grant",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table documents",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Missing grant",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table documents",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Missing grant",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table documents",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Missing grant",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table documents",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Missing grant",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Q4 plan",
+          "Hiring notes"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Q4 plan",
+            "Returned:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Silent empty select",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table documents",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Silent empty select",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Q4 plan",
+            "Filtered:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Silent empty select",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Q4 plan",
+            "Filtered:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Silent empty select",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Q4 plan",
+            "Filtered:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Silent empty select",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Q4 plan",
+          "Hiring notes"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Q4 plan",
+            "Returned:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Grant and owner policy",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table documents",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Grant and owner policy",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Q4 plan"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Q4 plan",
+            "Filtered:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Grant and owner policy",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Hiring notes"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Q4 plan",
+            "Returned:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Grant and owner policy",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Q4 plan"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Q4 plan",
+            "Filtered:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "missing-grant",
+        "chip": "Grant and owner policy",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Q4 plan",
+          "Hiring notes"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Q4 plan",
+            "Returned:Hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Owner policy",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tasks",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Owner policy",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Ship the grant fix",
+          "Record the demo"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Ship the grant fix",
+            "Returned:Record the demo",
+            "Filtered:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Owner policy",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Review the hiring notes"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Ship the grant fix",
+            "Filtered:Record the demo",
+            "Returned:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Owner policy",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Ship the grant fix",
+          "Record the demo"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Ship the grant fix",
+            "Returned:Record the demo",
+            "Filtered:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Owner policy",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Ship the grant fix",
+          "Record the demo",
+          "Review the hiring notes"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Ship the grant fix",
+            "Returned:Record the demo",
+            "Returned:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Add USING (true)",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tasks",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Add USING (true)",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Ship the grant fix",
+          "Record the demo",
+          "Review the hiring notes"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Ship the grant fix",
+            "Returned:Record the demo",
+            "Returned:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Add USING (true)",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Ship the grant fix",
+          "Record the demo",
+          "Review the hiring notes"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Ship the grant fix",
+            "Returned:Record the demo",
+            "Returned:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Add USING (true)",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Ship the grant fix",
+          "Record the demo",
+          "Review the hiring notes"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Ship the grant fix",
+            "Returned:Record the demo",
+            "Returned:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Add USING (true)",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Ship the grant fix",
+          "Record the demo",
+          "Review the hiring notes"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Ship the grant fix",
+            "Returned:Record the demo",
+            "Returned:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Grant, no policy",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tasks",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Grant, no policy",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Ship the grant fix",
+            "Filtered:Record the demo",
+            "Filtered:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Grant, no policy",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Ship the grant fix",
+            "Filtered:Record the demo",
+            "Filtered:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Grant, no policy",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Ship the grant fix",
+            "Filtered:Record the demo",
+            "Filtered:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "agent-as-alice",
+        "chip": "Grant, no policy",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Ship the grant fix",
+          "Record the demo",
+          "Review the hiring notes"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Ship the grant fix",
+            "Returned:Record the demo",
+            "Returned:Review the hiring notes"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Owner policy",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table invoices",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Owner policy",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Filtered:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Owner policy",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Owner policy",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Filtered:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Owner policy",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Add USING (true)",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table invoices",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Add USING (true)",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Add USING (true)",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Add USING (true)",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Add USING (true)",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Only USING (true)",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Only USING (true)",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Only USING (true)",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Only USING (true)",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "using-true",
+        "chip": "Only USING (true)",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Studio invoice",
+          "Retreat invoice"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Studio invoice",
+            "Returned:Retreat invoice"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Update policy only",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tickets",
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Update policy only",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Login bug",
+            "Outside the query:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Update policy only",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Outside the query:Login bug",
+            "Filtered:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Update policy only",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Login bug",
+            "Outside the query:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Update policy only",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Not returned:Login bug",
+            "Not returned:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Add a SELECT policy",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tickets",
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Add a SELECT policy",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": 1,
+        "returned": [
+          "Login bug"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Updated:Login bug",
+            "Outside the query:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Add a SELECT policy",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": 1,
+        "returned": [
+          "Billing question"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Outside the query:Login bug",
+            "Updated:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Add a SELECT policy",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": 1,
+        "returned": [
+          "Login bug"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Updated:Login bug",
+            "Outside the query:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Add a SELECT policy",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Not returned:Login bug",
+            "Not returned:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Revoke UPDATE",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tickets",
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Revoke UPDATE",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tickets",
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Revoke UPDATE",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tickets",
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Revoke UPDATE",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table tickets",
+        "bypass": false,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "silent-update",
+        "chip": "Revoke UPDATE",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": 0,
+        "returned": [],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Not returned:Login bug",
+            "Not returned:Billing question"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner or teammate",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table notes",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner or teammate",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan",
+          "Launch checklist"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Filtered:1:1 notes",
+            "Returned:Launch checklist",
+            "Filtered:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner or teammate",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Sprint plan",
+          "1:1 notes",
+          "Launch checklist"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Grocery list",
+            "Returned:Sprint plan",
+            "Returned:1:1 notes",
+            "Returned:Launch checklist",
+            "Filtered:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner or teammate",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan",
+          "Launch checklist"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Filtered:1:1 notes",
+            "Returned:Launch checklist",
+            "Filtered:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner or teammate",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan",
+          "1:1 notes",
+          "Launch checklist",
+          "Roadmap"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Returned:1:1 notes",
+            "Returned:Launch checklist",
+            "Returned:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner only",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table notes",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner only",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Filtered:1:1 notes",
+            "Filtered:Launch checklist",
+            "Filtered:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner only",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "1:1 notes",
+          "Launch checklist"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Filtered:Grocery list",
+            "Filtered:Sprint plan",
+            "Returned:1:1 notes",
+            "Returned:Launch checklist",
+            "Filtered:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner only",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Filtered:1:1 notes",
+            "Filtered:Launch checklist",
+            "Filtered:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "Owner only",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan",
+          "1:1 notes",
+          "Launch checklist",
+          "Roadmap"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Returned:1:1 notes",
+            "Returned:Launch checklist",
+            "Returned:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "USING (true)",
+        "id": "anon",
+        "runLabCalls": 2,
+        "sqlstate": "42501",
+        "err": "permission denied for table notes",
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [],
+        "ui": {
+          "kicker": "Grant layer, not policy",
+          "rows": [],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "USING (true)",
+        "id": "alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan",
+          "1:1 notes",
+          "Launch checklist",
+          "Roadmap"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Returned:1:1 notes",
+            "Returned:Launch checklist",
+            "Returned:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "USING (true)",
+        "id": "bob",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan",
+          "1:1 notes",
+          "Launch checklist",
+          "Roadmap"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Returned:1:1 notes",
+            "Returned:Launch checklist",
+            "Returned:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "USING (true)",
+        "id": "agent-alice",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": false,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan",
+          "1:1 notes",
+          "Launch checklist",
+          "Roadmap"
+        ],
+        "ui": {
+          "kicker": "Policy layer",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Returned:1:1 notes",
+            "Returned:Launch checklist",
+            "Returned:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      },
+      {
+        "kind": "desktop",
+        "slug": "team-notes",
+        "chip": "USING (true)",
+        "id": "service_role",
+        "runLabCalls": 2,
+        "sqlstate": null,
+        "err": null,
+        "bypass": true,
+        "rowsAffected": null,
+        "returned": [
+          "Grocery list",
+          "Sprint plan",
+          "1:1 notes",
+          "Launch checklist",
+          "Roadmap"
+        ],
+        "ui": {
+          "kicker": "RLS bypass",
+          "rows": [
+            "Returned:Grocery list",
+            "Returned:Sprint plan",
+            "Returned:1:1 notes",
+            "Returned:Launch checklist",
+            "Returned:Roadmap"
+          ],
+          "msg": null,
+          "bar": null
+        },
+        "problems": []
+      }
+    ]
+  }
+}

@@ -41,7 +41,7 @@ export function formatTrace(result: LabSuccess): TraceSummary {
       headline: "42501 permission denied",
       detail: result.identity.bypassesRls
         ? `${identityLabel(result.identity.id)} bypasses row level security, and it still needs a ${privilege} grant. The grant check failed before any policy could matter.`
-        : `The ${privilege} grant is missing for ${result.identity.role}. Postgres raised 42501 and did not run the policies. This is the grant layer, not the policy layer.`,
+        : `The ${privilege} grant is missing for ${result.identity.role}. Postgres raised 42501 and did not run the policies.`,
     };
   }
 
