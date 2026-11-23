@@ -1,0 +1,81 @@
+name: Keep alive
+
+on:
+  schedule:
+    # Every other day at 07:00 UTC (08:00 Africa/Lagos). GitHub cron is UTC.
+    - cron: "0 7 */2 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  touch-db:
+    name: Touch the production database
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run the missing-grant lab with the publishable key
+        env:
+          SUPABASE_URL: https://jyawzkizfsnfkifanmjm.supabase.co
+          PROD_APP: https://policy-trace-gray.vercel.app
+          # Publishable key only. Set this repo secret if you want to pin it;
+          # otherwise the job reads the key already shipped in the public client.
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # Default missing-grant policy SQL from src/lib/scenarios.ts.
+          POLICY_SQL: |
+            alter table lab_sandbox.documents enable row level security;
+
+            create policy "owner reads own documents"
+            on lab_sandbox.documents
+            as permissive
+            for select
+            to authenticated
+            using ((select auth.uid()) = owner_id);
+        run: |
+          set -euo pipefail
+
+          key="${SUPABASE_ANON_KEY:-}"
+          if [ -z "$key" ]; then
+            html="$(curl -fsSL "$PROD_APP/lab/missing-grant")"
+            mapfile -t scripts < <(printf '%s' "$html" | grep -oE '/_next/static/[^"[:space:]]+\.js' | sort -u)
+            for src in "${scripts[@]}"; do
+              chunk="$(curl -fsSL "$PROD_APP$src")"
+              found="$(printf '%s' "$chunk" | grep -oE 'sb_publishable_[A-Za-z0-9_]+' | head -n 1 || true)"
+              if [ -n "$found" ]; then
+                key="$found"
+                break
+              fi
+            done
+          fi
+
+          if [ -z "$key" ]; then
+            echo "Could not find a publishable key in the repo secret or the production client."
+            exit 1
+          fi
+
+          if printf '%s' "$key" | grep -qi 'service_role'; then
+            echo "Refusing to use a service_role key."
+            exit 1
+          fi
+
+          payload="$(python3 -c 'import json, os; print(json.dumps({"p_scenario_slug": "missing-grant", "p_identity": "alice", "p_policy_sql": os.environ["POLICY_SQL"]}))')"
+
+          resp="$(curl -fsS --show-error -X POST "$SUPABASE_URL/rest/v1/rpc/run_lab" \
+            -H "apikey: $key" \
+            -H "Authorization: Bearer $key" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation" \
+            -d "$payload")"
+
+          echo "$resp"
+          printf '%s' "$resp" | python3 -c '
+          import json, sys
+          body = json.load(sys.stdin)
+          if isinstance(body, list):
+              body = body[0] if body else {}
+          sqlstate = body.get("sqlstate")
+          if sqlstate != "42501":
+              raise SystemExit(f"expected missing-grant sqlstate 42501, got {body!r}")
+          print("keep-alive ok: missing-grant returned 42501")
+          '
